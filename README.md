@@ -10,43 +10,38 @@ Ez a repozitórium egy agydaganatok detektálására és szegmentálására szol
 
 ## ⚙️ Telepítés és Előkészületek
 
-A projekt futtatásához **Anaconda** használata javasolt. A nagy méretű adathalmazok és modell-súlyok a GitHub korlátai miatt nincsenek feltöltve, ezért azokat manuálisan kell pótolni.
+A projekt futtatásához **Anaconda** használata javasolt. A nagy méretű betanító adathalmazok a GitHub korlátai miatt nincsenek feltöltve, de a szükséges modellek és a forráskód azonnal futtathatóak.
 
 ### 1. A projekt klónozása
 Nyiss egy terminált, és klónozd le a repozitóriumot:
-```bash
-git clone [https://github.com/Healex04/Szakdolgozat.git](https://github.com/Healex04/Szakdolgozat.git)
-cd Szakdolgozat
-```
+
+    git clone [https://github.com/Healex04/Szakdolgozat.git](https://github.com/Healex04/Szakdolgozat.git)
+    cd Szakdolgozat
 
 ### 2. A SAM 2 (Segment Anything Model 2) integrálása
-A SAM 2 alapú szegmentációhoz a Meta hivatalos forráskódját közvetlenül a projekt főkönyvtárába kell klónozni:
-```bash
-git clone [https://github.com/facebookresearch/segment-anything-2.git](https://github.com/facebookresearch/segment-anything-2.git)
-```
-> **Megjegyzés:** A SAM 2 modell súlyait (pl. `sam2_hiera_large.pt`) töltsd le a hivatalos oldalról, és helyezd el a `segment-anything-2/` mappába.
+A SAM 2 alapú szegmentációhoz a Meta hivatalos forráskódját **közvetlenül a projekt főkönyvtárába** kell klónozni:
 
-### 3. Modellek és Könyvtárak beállítása
-1. Hozd létre a főkönyvtárban a `Models/` mappát.
-2. Másold bele a betanított YOLOv8 súlyokat (pl. `YOLO_3medfilt.pt`).
-3. Hozd létre a virtuális környezetet a mellékelt `environment.yml` fájlból:
-```bash
-conda env create -f environment.yml
-conda activate <a_kornyezet_neve>
-```
+    git clone [https://github.com/facebookresearch/segment-anything-2.git](https://github.com/facebookresearch/segment-anything-2.git)
+
+> **Megjegyzés:** A SAM 2 modell súlyait (pl. sam2_hiera_large.pt) töltsd le a hivatalos oldalról, és helyezd el a segment-anything-2 mappába.
+
+### 3. Conda környezet felépítése
+Hozd létre a virtuális környezetet a mellékelt environment.yml fájlból:
+
+    conda env create -f environment.yml
+    conda activate <a_kornyezet_neve_az_yml_fajlbol>
 
 ---
 
 ## 🚀 Használati Útmutató
 
 A szoftver grafikus kezelőfelülete (GUI) az alábbi paranccsal indítható a főkönyvtárból:
-```bash
-python main.py
-```
+
+    python main.py
 
 ### A szoftver funkciói:
-1. **Adatbetöltés:** A *Fájl -> Mappa Megnyitása* menüben tölts be egy MRI szeleteket tartalmazó mappát (PNG/JPG formátum).
-2. **Referencia maszkok:** Ha rendelkezel Ground Truth adatokkal, töltsd be őket az összehasonlító statisztikákhoz.
+1. **Adatbetöltés:** A *Fájl -> Mappa Megnyitása* menüben tölts be egy MRI szeleteket tartalmazó mappát. A szoftver a felvételeket `000.jpg`, `001.jpg` (stb.) formátumban várja.
+2. **Referencia maszkok:** Ha rendelkezel Ground Truth adatokkal, töltsd be őket az összehasonlító statisztikákhoz. Ezeknek pontosan követniük kell az eredeti képek elnevezését `_mask` utótaggal (pl. `000_mask.jpg`).
 3. **Modellválasztás:** A bal oldali panelen válassz a hibrid algoritmusok vagy a SAM 2 közül.
 4. **3D MPR Nézet:** A szoftver automatikusan előállítja a koronális és szagittális metszeteket, amik között a csúszkákkal navigálhatsz.
 5. **Eredmények:** A rendszer kiszámítja a daganat térfogatát és (referencia esetén) a Dice-koefficienst.
@@ -69,12 +64,11 @@ A projekt moduláris felépítésű, különválasztva a logikát a vizualizáci
 
 A kód részletes, metódus-szintű leírását a generált Sphinx dokumentáció tartalmazza. 
 Új dokumentáció generálásához használd a következő parancsot a `docs/` mappában Windowson:
-```bash
-.\make.bat html
-```
+
+    .\make.bat html
 
 ---
 
 ## 🎓 Szerző
-**Alex** - Programtervező Informatikus hallgató, Széchenyi István Egyetem.
+** Hegyi Alex** - Programtervező Informatikus hallgató, Széchenyi István Egyetem.
 **Téma:** Agydaganatok automatizált detektálása és szegmentálása mesterséges intelligencia segítségével.
