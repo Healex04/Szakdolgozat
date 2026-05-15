@@ -10,7 +10,7 @@ Ez a repozitórium egy agydaganatok detektálására és szegmentálására szol
 
 ## ⚙️ Telepítés és Előkészületek
 
-A projekt futtatásához **Anaconda** vagy **Miniconda** használata javasolt. A nagy méretű adathalmazok és modell-súlyok a GitHub korlátai miatt nincsenek feltöltve, ezért azokat manuálisan kell pótolni.
+A projekt futtatásához **Anaconda** használata javasolt. A nagy méretű adathalmazok és modell-súlyok a GitHub korlátai miatt nincsenek feltöltve, ezért azokat manuálisan kell pótolni.
 
 ### 1. A projekt klónozása
 Nyiss egy terminált, és klónozd le a repozitóriumot:
@@ -20,11 +20,11 @@ cd Szakdolgozat
 ```
 
 ### 2. A SAM 2 (Segment Anything Model 2) integrálása
-A SAM 2 alapú szegmentációhoz a Meta hivatalos forráskódját **közvetlenül a projekt főkönyvtárába** kell klónozni:
+A SAM 2 alapú szegmentációhoz a Meta hivatalos forráskódját közvetlenül a projekt főkönyvtárába kell klónozni:
 ```bash
 git clone [https://github.com/facebookresearch/segment-anything-2.git](https://github.com/facebookresearch/segment-anything-2.git)
 ```
-> **Megjegyzés:** A SAM 2 modell súlyait (pl. `sam2_hiera_large.pt`) töltsd le a hivatalos oldalról, és helyezd el a `segment-anything-2/checkpoints` mappába.
+> **Megjegyzés:** A SAM 2 modell súlyait (pl. `sam2_hiera_large.pt`) töltsd le a hivatalos oldalról, és helyezd el a `segment-anything-2/` mappába.
 
 ### 3. Modellek és Könyvtárak beállítása
 1. Hozd létre a főkönyvtárban a `Models/` mappát.
