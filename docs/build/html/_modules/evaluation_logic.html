@@ -1,0 +1,270 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="hu" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>evaluation_logic &mdash; MRI Tumor Detektor 1.0 dokumentáció</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8f583c23"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/translations.js?v=ea187aaa"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Tárgymutató" href="../genindex.html" />
+    <link rel="search" title="Keresés" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            MRI Tumor Detektor
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MRI Tumor Detektor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Modul forráskód</a></li>
+      <li class="breadcrumb-item active">evaluation_logic</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>evaluation_logic forráskódja</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Volumetrikus Kiértékelő és Metrika Modul.</span>
+
+<span class="sd">Ez a modul végzi a prediktált 3D tumor maszkok és az orvosi Ground Truth (címkék) </span>
+<span class="sd">pixel-szintű és térfogati (volumetric) összehasonlítását. Kiszámítja az orvosi képfeldolgozásban </span>
+<span class="sd">standardnak számító metrikákat (Dice, Sensitivity, Specificity).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">plotting_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">plot_confusion_matrix</span><span class="p">,</span> <span class="n">plot_dice_histogram</span>
+
+<div class="viewcode-block" id="Evaluator">
+<a class="viewcode-back" href="../index.html#evaluation_logic.Evaluator">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Evaluator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A szegmentációs eredményeket statisztikailag kiértékelő osztály.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Evaluator.calculate_metrics">
+<a class="viewcode-back" href="../index.html#evaluation_logic.Evaluator.calculate_metrics">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">calculate_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pred_mask</span><span class="p">,</span> <span class="n">true_mask</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Kiszámítja az alapvető statisztikai metrikákat két 2D bináris maszk között.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            pred_mask (numpy.ndarray): Az algoritmus által generált bináris maszk.</span>
+<span class="sd">            true_mask (numpy.ndarray): Az orvosi (Ground Truth) bináris maszk.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (tp, tn, fp, fn, dice, sensitivity, specificity, balanced_acc)</span>
+<span class="sd">                - tp, tn, fp, fn (int): A téveszmátrix elemei pixel darabszámban.</span>
+<span class="sd">                - dice, sensitivity, specificity, balanced_acc (float): 0.0 és 1.0 közötti teljesítménymutatók.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pred_bool</span> <span class="o">=</span> <span class="p">(</span><span class="n">pred_mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">true_bool</span> <span class="o">=</span> <span class="p">(</span><span class="n">true_mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">tp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">pred_bool</span><span class="p">,</span> <span class="n">true_bool</span><span class="p">))</span>
+        <span class="n">tn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="o">~</span><span class="n">pred_bool</span><span class="p">,</span> <span class="o">~</span><span class="n">true_bool</span><span class="p">))</span>
+        <span class="n">fp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">pred_bool</span><span class="p">,</span> <span class="o">~</span><span class="n">true_bool</span><span class="p">))</span>
+        <span class="n">fn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="o">~</span><span class="n">pred_bool</span><span class="p">,</span> <span class="n">true_bool</span><span class="p">))</span>
+        
+        <span class="c1"># Simító tényező a nullával való osztás elkerülésére (Laplace smoothing)</span>
+        <span class="n">smooth</span> <span class="o">=</span> <span class="mf">1e-6</span>
+        <span class="n">dice</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">tp</span> <span class="o">+</span> <span class="n">smooth</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">pred_bool</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">true_bool</span><span class="p">)</span> <span class="o">+</span> <span class="n">smooth</span><span class="p">)</span>
+        
+        <span class="n">sensitivity</span> <span class="o">=</span> <span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fn</span> <span class="o">+</span> <span class="n">smooth</span><span class="p">)</span>
+        <span class="n">specificity</span> <span class="o">=</span> <span class="n">tn</span> <span class="o">/</span> <span class="p">(</span><span class="n">tn</span> <span class="o">+</span> <span class="n">fp</span> <span class="o">+</span> <span class="n">smooth</span><span class="p">)</span>
+        <span class="n">balanced_acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">sensitivity</span> <span class="o">+</span> <span class="n">specificity</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        
+        <span class="k">return</span> <span class="n">tp</span><span class="p">,</span> <span class="n">tn</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">dice</span><span class="p">,</span> <span class="n">sensitivity</span><span class="p">,</span> <span class="n">specificity</span><span class="p">,</span> <span class="n">balanced_acc</span></div>
+
+
+<div class="viewcode-block" id="Evaluator.run_evaluation">
+<a class="viewcode-back" href="../index.html#evaluation_logic.Evaluator.run_evaluation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generated_masks_folder</span><span class="p">,</span> <span class="n">ground_truth_folder</span><span class="p">,</span> <span class="n">output_base_folder</span><span class="p">,</span> <span class="n">patient_name</span><span class="p">,</span> <span class="n">method_name</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Végrehajtja egy teljes beteg (MRI kötet) 3D volumetrikus kiértékelését.</span>
+
+<span class="sd">        A függvény betölti a prediktált és a valós maszkokat, pixelenként összeveti őket, </span>
+<span class="sd">        kiszámolja a globális 3D metrikákat, majd generál egy szöveges analitikai riportot </span>
+<span class="sd">        és a vizuális ábrákat.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            generated_masks_folder (str): A modell által generált maszkok mappája.</span>
+<span class="sd">            ground_truth_folder (str): A manuálisan annotált orvosi maszkok mappája.</span>
+<span class="sd">            output_base_folder (str): A főkönyvtár, ahova az eredmény mappa kerül.</span>
+<span class="sd">            patient_name (str): Az aktuális MRI kötet azonosítója/neve.</span>
+<span class="sd">            method_name (str): A kiértékelt algoritmus kódja (pl. &#39;3D_GRADIENT_GAUSS&#39;).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (success, save_dir, vol_dice)</span>
+<span class="sd">                - success (bool): Igaz, ha sikeres volt az értékelés, Hamis ha nem talált fájlokat.</span>
+<span class="sd">                - save_dir (str): A generált riportokat tartalmazó mappa elérési útja.</span>
+<span class="sd">                - vol_dice (float): A végső, 3D globális Dice Score (0.0 - 1.0).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">save_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_base_folder</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;EVAL_</span><span class="si">{</span><span class="n">patient_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">method_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">gen_files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">generated_masks_folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.png&#39;</span><span class="p">)])</span>
+        
+        <span class="n">g_tp</span><span class="p">,</span> <span class="n">g_tn</span><span class="p">,</span> <span class="n">g_fp</span><span class="p">,</span> <span class="n">g_fn</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">dice_scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">processed_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">gen_files</span><span class="p">:</span>
+            <span class="n">gen_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">generated_masks_folder</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="n">base_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fname</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            
+            <span class="n">possible_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">base_name</span> <span class="o">+</span> <span class="s2">&quot;_mask&quot;</span><span class="p">,</span> <span class="n">base_name</span><span class="p">,</span> <span class="n">base_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_mask&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)]</span>
+            <span class="n">gt_path</span> <span class="o">=</span> <span class="kc">None</span>
+            
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">possible_names</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;.tif&#39;</span><span class="p">,</span> <span class="s1">&#39;.bmp&#39;</span><span class="p">]:</span>
+                    <span class="n">full_p</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ground_truth_folder</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="n">ext</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_p</span><span class="p">):</span>
+                        <span class="n">gt_path</span> <span class="o">=</span> <span class="n">full_p</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">gt_path</span><span class="p">:</span> 
+                    <span class="k">break</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">gt_path</span><span class="p">:</span> 
+                <span class="k">continue</span>
+
+            <span class="n">pred_img</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">gen_path</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>
+            <span class="n">true_img</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">gt_path</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">pred_img</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">true_img</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+                <span class="k">continue</span>
+            
+            <span class="k">if</span> <span class="n">pred_img</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">true_img</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+                <span class="n">true_img</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">true_img</span><span class="p">,</span> <span class="p">(</span><span class="n">pred_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">pred_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv</span><span class="o">.</span><span class="n">INTER_NEAREST</span><span class="p">)</span>
+
+            <span class="n">tp</span><span class="p">,</span> <span class="n">tn</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">dice</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculate_metrics</span><span class="p">(</span><span class="n">pred_img</span><span class="p">,</span> <span class="n">true_img</span><span class="p">)</span>
+            
+            <span class="n">g_tp</span> <span class="o">+=</span> <span class="n">tp</span>
+            <span class="n">g_tn</span> <span class="o">+=</span> <span class="n">tn</span>
+            <span class="n">g_fp</span> <span class="o">+=</span> <span class="n">fp</span>
+            <span class="n">g_fn</span> <span class="o">+=</span> <span class="n">fn</span>
+            
+            <span class="n">dice_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dice</span><span class="p">)</span>
+            <span class="n">processed_count</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">processed_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">0.0</span>
+
+        <span class="c1"># --- 3D Volumetrikus Metrikák Számítása ---</span>
+        <span class="n">sum_dice_denom</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">g_tp</span> <span class="o">+</span> <span class="n">g_fp</span> <span class="o">+</span> <span class="n">g_fn</span>
+        <span class="n">vol_dice</span> <span class="o">=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">g_tp</span><span class="p">)</span> <span class="o">/</span> <span class="n">sum_dice_denom</span> <span class="k">if</span> <span class="n">sum_dice_denom</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.0</span>
+        
+        <span class="n">sum_sens_denom</span> <span class="o">=</span> <span class="n">g_tp</span> <span class="o">+</span> <span class="n">g_fn</span>
+        <span class="n">vol_sens</span> <span class="o">=</span> <span class="n">g_tp</span> <span class="o">/</span> <span class="n">sum_sens_denom</span> <span class="k">if</span> <span class="n">sum_sens_denom</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.0</span>
+            
+        <span class="n">sum_spec_denom</span> <span class="o">=</span> <span class="n">g_tn</span> <span class="o">+</span> <span class="n">g_fp</span>
+        <span class="n">vol_spec</span> <span class="o">=</span> <span class="n">g_tn</span> <span class="o">/</span> <span class="n">sum_spec_denom</span> <span class="k">if</span> <span class="n">sum_spec_denom</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">1.0</span>
+            
+        <span class="n">vol_bal_acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">vol_sens</span> <span class="o">+</span> <span class="n">vol_spec</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+        <span class="c1"># --- Kimeneti Fájlok Generálása ---</span>
+        <span class="n">global_cm_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;GLOBAL_CM_</span><span class="si">{</span><span class="n">method_name</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+        <span class="n">plot_confusion_matrix</span><span class="p">(</span><span class="n">g_tp</span><span class="p">,</span> <span class="n">g_tn</span><span class="p">,</span> <span class="n">g_fp</span><span class="p">,</span> <span class="n">g_fn</span><span class="p">,</span> <span class="n">global_cm_path</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Globális CM - </span><span class="si">{</span><span class="n">patient_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="n">hist_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Dice_Histogram_</span><span class="si">{</span><span class="n">method_name</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+        <span class="n">plot_dice_histogram</span><span class="p">(</span><span class="n">dice_scores</span><span class="p">,</span> <span class="n">hist_path</span><span class="p">)</span>
+        
+        <span class="n">report_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="s2">&quot;report.txt&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;=== MRI TUMOR DETEKTÁLÁS EREDMÉNYEK ===</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Beteg azonosító: </span><span class="si">{</span><span class="n">patient_name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Használt módszer: </span><span class="si">{</span><span class="n">method_name</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Kiértékelt szeletek száma: </span><span class="si">{</span><span class="n">processed_count</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;--- FŐ 3D VOLUMETRIKUS METRIKÁK ---</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;3D Dice Score (Átfedés):    </span><span class="si">{</span><span class="n">vol_dice</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;3D Balanced Accuracy:       </span><span class="si">{</span><span class="n">vol_bal_acc</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;3D Sensitivity (Recall):    </span><span class="si">{</span><span class="n">vol_sens</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;3D Specificity:             </span><span class="si">{</span><span class="n">vol_spec</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;--- PIXEL ALAPÚ CONFUSION MATRIX (Globális összeg) ---</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;True Positive (Találat):    </span><span class="si">{</span><span class="n">g_tp</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;True Negative (Háttér):     </span><span class="si">{</span><span class="n">g_tn</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;False Positive (Téves):     </span><span class="si">{</span><span class="n">g_fp</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;False Negative (Hiányzó):   </span><span class="si">{</span><span class="n">g_fn</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="n">vol_dice</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Hegyi Alex.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

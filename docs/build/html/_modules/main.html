@@ -1,0 +1,514 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="hu" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>main &mdash; MRI Tumor Detektor 1.0 dokumentáció</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8f583c23"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/translations.js?v=ea187aaa"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Tárgymutató" href="../genindex.html" />
+    <link rel="search" title="Keresés" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            MRI Tumor Detektor
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MRI Tumor Detektor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Modul forráskód</a></li>
+      <li class="breadcrumb-item active">main</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>main forráskódja</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">MRI Tumor Detektor - Fő Alkalmazás (Main)</span>
+<span class="sd">=========================================</span>
+
+<span class="sd">Ez a modul a projekt központi grafikus felhasználói felülete (GUI), </span>
+<span class="sd">amely PyQt6 keretrendszerre épül. </span>
+
+<span class="sd">Szoftverarchitektúra</span>
+<span class="sd">--------------------</span>
+<span class="sd">A rendszer szigorúan elválasztja a grafikus megjelenítést a matematikai logikától:</span>
+<span class="sd">- **Modell Réteg:** A mesterséges intelligencia modellek (YOLO, SAM, GMM) a `tumor_logics` mappában találhatók.</span>
+<span class="sd">- **Katalógus:** A `model_registry` modul dinamikusan tölti be ezeket a modelleket.</span>
+<span class="sd">- **Nézet Réteg:** Ez a modul (`main.py`) végzi a 3D térfogatok memóriakezelését és MPR (Multi-Planar Reconstruction) megjelenítését.</span>
+
+<span class="sd">3D Megjelenítés (MPR)</span>
+<span class="sd">---------------------</span>
+<span class="sd">A szoftver képes az Axiális (Z), Koronális (Y) és Szagittális (X) metszetek valós idejű</span>
+<span class="sd">képzésére a betöltött 3D Numpy tömbök (Volume) átrendezésével (transpose, flip, resize).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">QApplication</span><span class="p">,</span> <span class="n">QMainWindow</span><span class="p">,</span> <span class="n">QWidget</span><span class="p">,</span> <span class="n">QVBoxLayout</span><span class="p">,</span> 
+                             <span class="n">QHBoxLayout</span><span class="p">,</span> <span class="n">QLabel</span><span class="p">,</span> <span class="n">QListWidget</span><span class="p">,</span> <span class="n">QPushButton</span><span class="p">,</span> 
+                             <span class="n">QSlider</span><span class="p">,</span> <span class="n">QFileDialog</span><span class="p">,</span> <span class="n">QStatusBar</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="p">,</span>
+                             <span class="n">QProgressDialog</span><span class="p">,</span> <span class="n">QComboBox</span><span class="p">,</span> <span class="n">QFrame</span><span class="p">,</span> <span class="n">QTextEdit</span><span class="p">,</span>
+                             <span class="n">QMessageBox</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtGui</span><span class="w"> </span><span class="kn">import</span> <span class="n">QPixmap</span><span class="p">,</span> <span class="n">QImage</span><span class="p">,</span> <span class="n">QCloseEvent</span><span class="p">,</span> <span class="n">QAction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtCore</span><span class="w"> </span><span class="kn">import</span> <span class="n">Qt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">model_registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">AVAILABLE_MODELS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">evaluation_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Evaluator</span>
+
+<div class="viewcode-block" id="MRITumorApp">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MRITumorApp</span><span class="p">(</span><span class="n">QMainWindow</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A fő ablakot és a globális állapottérképet (State) kezelő osztály.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        image_paths (list of str): A betöltött MRI szeletek fájlelérési útjai.</span>
+<span class="sd">        volume_3d (numpy.ndarray): Az eredeti MRI felvételeket tartalmazó 3D (Z, Y, X) szürkeárnyalatos tömb.</span>
+<span class="sd">        mask_3d (numpy.ndarray): A modell által prediktált bináris 3D maszk.</span>
+<span class="sd">        gt_3d (numpy.ndarray): Az orvosi Ground Truth 3D maszk.</span>
+<span class="sd">        current_folder_path (str): Az aktuális MRI forrásmappa.</span>
+<span class="sd">        current_label_folder (str): Az aktuális Ground Truth mappa.</span>
+<span class="sd">        base_temp_dir (str): Az átmeneti predikciók mentési helye.</span>
+<span class="sd">        eval_results_dir (str): A generált analitikai riportok mentési helye.</span>
+<span class="sd">        loaded_models (dict): A memóriába már betöltött AI modellek (példányok) gyorsítótára.</span>
+<span class="sd">        current_view_idx (int): Az aktuális 3D nézet azonosítója (0: Axiális, 1: Koronális, 2: Szagittális).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        
+        <span class="c1"># --- 1. Állapotváltozók és Memória ---</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_paths</span> <span class="o">=</span> <span class="p">[]</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span> <span class="o">=</span> <span class="kc">None</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span> <span class="o">=</span> <span class="kc">None</span>   
+        <span class="bp">self</span><span class="o">.</span><span class="n">gt_3d</span> <span class="o">=</span> <span class="kc">None</span>     
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_folder_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_folder_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_label_folder</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_temp_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;temp_masks&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eval_results_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;Evaluation_Results&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">loaded_models</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span> <span class="o">=</span> <span class="n">Evaluator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_view_idx</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1"># --- 2. GUI Inicializálás ---</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">&quot;MRI Tumor Detektor - Széchenyi Egyetem&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1300</span><span class="p">,</span> <span class="mi">850</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_dark_theme</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_menu_bar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_ui_layout</span><span class="p">()</span>
+
+    <span class="c1"># =========================================================================</span>
+    <span class="c1"># FELHASZNÁLÓI FELÜLET (UI) ÉS STÍLUS</span>
+    <span class="c1"># =========================================================================</span>
+
+<div class="viewcode-block" id="MRITumorApp.set_dark_theme">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.set_dark_theme">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_dark_theme</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Modern, sötét tónusú stílus (CSS/QSS) beállítása.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            QMainWindow { background-color: #1e1e1e; color: #d4d4d4; }</span>
+<span class="s2">            QFrame#SidePanel { background-color: #252526; border-right: 1px solid #3c3c3c; border-left: 1px solid #3c3c3c; }</span>
+<span class="s2">            QLabel { color: #cccccc; font-family: &#39;Segoe UI&#39;, sans-serif; }</span>
+<span class="s2">            QLabel#ImageDisplay { background-color: #050505; border: 1px solid #333; border-radius: 4px; }</span>
+<span class="s2">            </span>
+<span class="s2">            QPushButton { background-color: #333; color: #eee; border: 1px solid #444; padding: 8px; border-radius: 4px; }</span>
+<span class="s2">            QPushButton:hover { background-color: #444; border: 1px solid #555; }</span>
+<span class="s2">            QPushButton#Primary { background-color: #007acc; font-weight: bold; border: none; }</span>
+<span class="s2">            QPushButton#Primary:hover { background-color: #0098ff; }</span>
+<span class="s2">            </span>
+<span class="s2">            QListWidget { background-color: #1e1e1e; color: #ffffff; border: none; font-size: 13px; outline: none; }</span>
+<span class="s2">            QListWidget::item { color: #ffffff; padding: 4px; }</span>
+<span class="s2">            QListWidget::item:selected { background-color: #37373d; color: #007acc; }</span>
+<span class="s2">            </span>
+<span class="s2">            QComboBox { background-color: #3c3c3c; color: white; border: 1px solid #555; padding: 4px; border-radius: 4px; }</span>
+<span class="s2">            QTextEdit#Console { background-color: #1e1e1e; color: #4ec9b0; border: 1px solid #333; font-family: &#39;Consolas&#39;, monospace; font-size: 12px; }</span>
+<span class="s2">            </span>
+<span class="s2">            QMenuBar { background-color: #333; color: #ddd; }</span>
+<span class="s2">            QMenuBar::item:selected { background-color: #444; }</span>
+<span class="s2">            QMenu { background-color: #252526; color: white; border: 1px solid #333; }</span>
+<span class="s2">            </span>
+<span class="s2">            QSlider::groove:horizontal { background: #3c3c3c; height: 6px; border-radius: 3px; }</span>
+<span class="s2">            QSlider::handle:horizontal { background: #007acc; width: 14px; margin: -4px 0; border-radius: 7px; }</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MRITumorApp.init_menu_bar">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.init_menu_bar">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_menu_bar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A felső gördülő menürendszer felépítése és az események (Action) bekötése.&quot;&quot;&quot;</span>
+        <span class="n">menubar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">menuBar</span><span class="p">()</span>
+        
+        <span class="n">file_menu</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="s2">&quot;Fájl&quot;</span><span class="p">)</span>
+        <span class="n">file_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="s2">&quot;Mappa Megnyitása&quot;</span><span class="p">,</span> <span class="s2">&quot;Ctrl+O&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_folder</span><span class="p">)</span>
+        <span class="n">file_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="s2">&quot;Címkék (GT) Betöltése&quot;</span><span class="p">,</span> <span class="s2">&quot;Ctrl+L&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">open_label_folder</span><span class="p">)</span>
+        
+        <span class="n">view_menu</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="s2">&quot;Nézet&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axial_act</span> <span class="o">=</span> <span class="n">QAction</span><span class="p">(</span><span class="s2">&quot;Axiális (Z)&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">checkable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">triggered</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_view</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coronal_act</span> <span class="o">=</span> <span class="n">QAction</span><span class="p">(</span><span class="s2">&quot;Koronális (Y)&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">checkable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">triggered</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_view</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sagittal_act</span> <span class="o">=</span> <span class="n">QAction</span><span class="p">(</span><span class="s2">&quot;Szagittális (X)&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">checkable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">triggered</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_view</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axial_act</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">view_menu</span><span class="o">.</span><span class="n">addActions</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">axial_act</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coronal_act</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sagittal_act</span><span class="p">])</span>
+        
+        <span class="n">view_menu</span><span class="o">.</span><span class="n">addSeparator</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overlay_act</span> <span class="o">=</span> <span class="n">QAction</span><span class="p">(</span><span class="s2">&quot;Maszk Megjelenítése&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">checkable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">triggered</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh_display</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overlay_act</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_act</span> <span class="o">=</span> <span class="n">QAction</span><span class="p">(</span><span class="s2">&quot;Analitikai Színezés (TP/FP/FN)&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">checkable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">triggered</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">refresh_display</span><span class="p">)</span>
+        <span class="n">view_menu</span><span class="o">.</span><span class="n">addActions</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">overlay_act</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug_act</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="MRITumorApp.init_ui_layout">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.init_ui_layout">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_ui_layout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A hárompaneles (Bal: Vezérlés, Közép: Nézegető, Jobb: Analitika) főablak elrendezésének felépítése.&quot;&quot;&quot;</span>
+        <span class="n">central_widget</span> <span class="o">=</span> <span class="n">QWidget</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="n">central_widget</span><span class="p">)</span>
+        <span class="n">main_layout</span> <span class="o">=</span> <span class="n">QHBoxLayout</span><span class="p">(</span><span class="n">central_widget</span><span class="p">)</span>
+        <span class="n">main_layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">main_layout</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># --- BAL PANEL (Eszköztár és Fájlok) ---</span>
+        <span class="n">left_panel</span> <span class="o">=</span> <span class="n">QFrame</span><span class="p">();</span> <span class="n">left_panel</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">&quot;SidePanel&quot;</span><span class="p">);</span> <span class="n">left_panel</span><span class="o">.</span><span class="n">setFixedWidth</span><span class="p">(</span><span class="mi">270</span><span class="p">)</span>
+        <span class="n">left_layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="n">left_panel</span><span class="p">)</span>
+        
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;AKTÍV MODELL&quot;</span><span class="p">,</span> <span class="n">styleSheet</span><span class="o">=</span><span class="s2">&quot;font-weight: bold; color: #569cd6;&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_selector</span> <span class="o">=</span> <span class="n">QComboBox</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_selector</span><span class="o">.</span><span class="n">addItems</span><span class="p">(</span><span class="n">AVAILABLE_MODELS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_selector</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_btn</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Tumor Keresése (Run)&quot;</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_btn</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">&quot;Primary&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_btn</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_detection</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_btn</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_btn</span><span class="p">)</span>
+        
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;MRI SZELETEK&quot;</span><span class="p">,</span> <span class="n">styleSheet</span><span class="o">=</span><span class="s2">&quot;margin-top: 20px; font-weight: bold; color: #569cd6;&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span> <span class="o">=</span> <span class="n">QListWidget</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="o">.</span><span class="n">currentRowChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_file_selected</span><span class="p">)</span>
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="p">)</span>
+
+        <span class="c1"># --- KÖZÉPSŐ PANEL (Megjelenítő) ---</span>
+        <span class="n">center_panel</span> <span class="o">=</span> <span class="n">QWidget</span><span class="p">()</span>
+        <span class="n">center_layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="n">center_panel</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_display</span> <span class="o">=</span> <span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;Válasszon egy forrás mappát a Fájl menüben...&quot;</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_display</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">&quot;ImageDisplay&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_display</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignmentFlag</span><span class="o">.</span><span class="n">AlignCenter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_display</span><span class="o">.</span><span class="n">setSizePolicy</span><span class="p">(</span><span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Policy</span><span class="o">.</span><span class="n">Ignored</span><span class="p">,</span> <span class="n">QSizePolicy</span><span class="o">.</span><span class="n">Policy</span><span class="o">.</span><span class="n">Ignored</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_display</span><span class="o">.</span><span class="n">setMinimumSize</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
+        
+        <span class="n">nav_layout</span> <span class="o">=</span> <span class="n">QHBoxLayout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span> <span class="o">=</span> <span class="n">QSlider</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_slider_change</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slice_label</span> <span class="o">=</span> <span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;Index: -&quot;</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_label</span><span class="o">.</span><span class="n">setFixedWidth</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mag_label</span> <span class="o">=</span> <span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">mag_label</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">&quot;color: #4ec9b0; font-weight: bold;&quot;</span><span class="p">)</span>
+        <span class="n">nav_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span><span class="p">);</span> <span class="n">nav_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_label</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">mag_lbl_ref</span> <span class="o">=</span> <span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">);</span> <span class="n">nav_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mag_lbl_ref</span><span class="p">)</span>
+        <span class="n">nav_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mag_label</span><span class="p">)</span>
+        
+        <span class="n">center_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_display</span><span class="p">,</span> <span class="n">stretch</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span> <span class="n">center_layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="n">nav_layout</span><span class="p">)</span>
+
+        <span class="c1"># --- JOBB PANEL (Statisztika és Konzol) ---</span>
+        <span class="n">right_panel</span> <span class="o">=</span> <span class="n">QFrame</span><span class="p">();</span> <span class="n">right_panel</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">&quot;SidePanel&quot;</span><span class="p">);</span> <span class="n">right_panel</span><span class="o">.</span><span class="n">setFixedWidth</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+        <span class="n">right_layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="n">right_panel</span><span class="p">)</span>
+        
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;JELMAGYARÁZAT&quot;</span><span class="p">,</span> <span class="n">styleSheet</span><span class="o">=</span><span class="s2">&quot;font-weight: bold; color: #569cd6;&quot;</span><span class="p">))</span>
+        <span class="n">legend_layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="n">legend_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;&lt;span style=&#39;color:#4caf50;&#39;&gt;■&lt;/span&gt; Találat (True Positive)&quot;</span><span class="p">))</span>
+        <span class="n">legend_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;&lt;span style=&#39;color:#f44336;&#39;&gt;■&lt;/span&gt; Téves Jelzés (False Positive)&quot;</span><span class="p">))</span>
+        <span class="n">legend_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;&lt;span style=&#39;color:#2196f3;&#39;&gt;■&lt;/span&gt; Hiányzó Rész (False Negative)&quot;</span><span class="p">))</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="n">legend_layout</span><span class="p">)</span>
+        
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addSpacing</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">&quot;EREDMÉNYEK KONZOL&quot;</span><span class="p">,</span> <span class="n">styleSheet</span><span class="o">=</span><span class="s2">&quot;font-weight: bold; color: #569cd6;&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eval_btn</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">&quot;Kiértékelés Indítása&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eval_btn</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_evaluation</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_btn</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eval_btn</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">console</span> <span class="o">=</span> <span class="n">QTextEdit</span><span class="p">();</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">&quot;Console&quot;</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">setReadOnly</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">&quot;Az analitikai adatok itt jelennek meg...&quot;</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="p">)</span>
+
+        <span class="n">main_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">left_panel</span><span class="p">);</span> <span class="n">main_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">center_panel</span><span class="p">);</span> <span class="n">main_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">right_panel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setStatusBar</span><span class="p">(</span><span class="n">QStatusBar</span><span class="p">())</span></div>
+
+
+    <span class="c1"># =========================================================================</span>
+    <span class="c1"># LOGIKA: BETÖLTÉS ÉS DETEKTÁLÁS</span>
+    <span class="c1"># =========================================================================</span>
+
+<div class="viewcode-block" id="MRITumorApp.open_folder">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.open_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dialógusablakon keresztül betölti a páciens MRI képeit egy 3D NumPy tömbbe.&quot;&quot;&quot;</span>
+        <span class="n">folder</span> <span class="o">=</span> <span class="n">QFileDialog</span><span class="o">.</span><span class="n">getExistingDirectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;MRI Mappa Kiválasztása&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">folder</span><span class="p">:</span> <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_folder_path</span> <span class="o">=</span> <span class="n">folder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_folder_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_paths</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpeg&#39;</span><span class="p">))])</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="o">.</span><span class="n">addItems</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_paths</span><span class="p">])</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_paths</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_paths</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gt_3d</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run_btn</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">change_view</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MRITumorApp.open_label_folder">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.open_label_folder">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open_label_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Dialógusablakon keresztül betölti a manuálisan annotált Ground Truth maszkokat.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_folder_path</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Hiba&quot;</span><span class="p">,</span> <span class="s2">&quot;Előbb egy MRI mappát kell megnyitni!&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">label_folder</span> <span class="o">=</span> <span class="n">QFileDialog</span><span class="o">.</span><span class="n">getExistingDirectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;Ground Truth Mappa Kiválasztása&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label_folder</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_label_folder</span> <span class="o">=</span> <span class="n">label_folder</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_gt_into_memory</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">debug_act</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">refresh_display</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MRITumorApp.run_detection">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.run_detection">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_detection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Példányosítja a kiválasztott AI modellt (Registry Pattern), majd elindítja a </span>
+<span class="sd">        futtatást (szegmentálást) a teljes 3D köteten egy aszinkron progress bar kíséretében.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span> <span class="o">=</span> <span class="kc">None</span><span class="p">;</span> <span class="bp">self</span><span class="o">.</span><span class="n">refresh_display</span><span class="p">()</span>
+        <span class="n">model_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_selector</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span>
+        <span class="n">model_cls</span><span class="p">,</span> <span class="n">model_code</span> <span class="o">=</span> <span class="n">AVAILABLE_MODELS</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
+        <span class="n">out_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_temp_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_folder_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">model_code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">model_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded_models</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded_models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_cls</span><span class="p">()</span>
+        <span class="n">detector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loaded_models</span><span class="p">[</span><span class="n">model_name</span><span class="p">]</span>
+
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">QProgressDialog</span><span class="p">(</span><span class="s2">&quot;Számítás folyamatban...&quot;</span><span class="p">,</span> <span class="s2">&quot;Mégse&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">detector</span><span class="o">.</span><span class="n">run_batch_processing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_folder_path</span><span class="p">,</span> <span class="n">out_folder</span><span class="p">,</span> <span class="n">progress</span><span class="o">.</span><span class="n">setValue</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mag_label</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mag (Z): </span><span class="si">{</span><span class="n">detector</span><span class="o">.</span><span class="n">last_best_z</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">detector</span><span class="p">,</span> <span class="s1">&#39;last_best_z&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_masks_into_memory</span><span class="p">(</span><span class="n">out_folder</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_display</span><span class="p">();</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_btn</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;HIBA a detektálás során: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MRITumorApp.load_masks_into_memory">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.load_masks_into_memory">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_masks_into_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A temp mappából betölti a generált predikciós maszkokat.&quot;&quot;&quot;</span>
+        <span class="n">masks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_paths</span><span class="p">:</span>
+            <span class="n">m_p</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">m_p</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">m_p</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">threshold</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">127</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">THRESH_BINARY</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">masks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MRITumorApp.load_gt_into_memory">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.load_gt_into_memory">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_gt_into_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A Ground Truth (referencia) maszkok betöltése a memóriába analitikai célokra.&quot;&quot;&quot;</span>
+        <span class="n">gts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_paths</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="n">b</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="n">gp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_label_folder</span><span class="p">,</span> <span class="n">b</span> <span class="o">+</span> <span class="s2">&quot;_mask&quot;</span> <span class="o">+</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">gp</span><span class="p">):</span> <span class="n">gp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_label_folder</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">gp</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">gp</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">gts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">threshold</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">127</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">THRESH_BINARY</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gt_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">gts</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MRITumorApp.run_evaluation">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.run_evaluation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_evaluation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Összeköti az `Evaluator` modult a GUI-val, és megjeleníti a 3D metrikákat a konzolon.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">&quot;Analitika futtatása...&quot;</span><span class="p">);</span> <span class="n">QApplication</span><span class="o">.</span><span class="n">processEvents</span><span class="p">()</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">code</span> <span class="o">=</span> <span class="n">AVAILABLE_MODELS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model_selector</span><span class="o">.</span><span class="n">currentText</span><span class="p">()]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluator</span><span class="o">.</span><span class="n">run_evaluation</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_temp_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">current_folder_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">code</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">),</span> 
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">current_label_folder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_results_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_folder_name</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;report.txt&quot;</span><span class="p">),</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hiba a kiértékelés során: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+    <span class="c1"># =========================================================================</span>
+    <span class="c1"># 3D MPR ÉS MEGJELENÍTÉS</span>
+    <span class="c1"># =========================================================================</span>
+
+<div class="viewcode-block" id="MRITumorApp.change_view">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.change_view">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">change_view</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Nézetváltás a 3D térben (Axiális, Koronális, Szagittális).&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axial_act</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">coronal_act</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">1</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">sagittal_act</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_view_idx</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="n">Z</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">max_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">Z</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">X</span><span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">1</span> <span class="k">else</span> <span class="n">Y</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span><span class="o">.</span><span class="n">setRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_idx</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">max_idx</span><span class="o">//</span><span class="mi">2</span><span class="p">);</span> <span class="bp">self</span><span class="o">.</span><span class="n">refresh_display</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MRITumorApp.update_image_display">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.update_image_display">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_image_display</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Az aktuálisan kiválasztott 3D metszet (MPR) kiszámítása és renderelése a Qt felületen.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">v_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_view_idx</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slice_label</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Szelet: </span><span class="si">{</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span><span class="o">.</span><span class="n">maximum</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="c1"># Szelet vágás</span>
+            <span class="k">if</span> <span class="n">v_idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="n">b</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gt_3d</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gt_3d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">v_idx</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="n">b</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span><span class="p">[:,:,</span><span class="n">idx</span><span class="p">],</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span><span class="p">[:,:,</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gt_3d</span><span class="p">[:,:,</span><span class="n">idx</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gt_3d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span> <span class="n">b</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_3d</span><span class="p">[:,</span><span class="n">idx</span><span class="p">,:],</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span><span class="p">[:,</span><span class="n">idx</span><span class="p">,:]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mask_3d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gt_3d</span><span class="p">[:,</span><span class="n">idx</span><span class="p">,:]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gt_3d</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="c1"># Forgatás és Nyújtás (A voxelmélység kompenzálása)</span>
+            <span class="k">if</span> <span class="n">v_idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="n">b</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">b</span><span class="p">);</span> <span class="n">m</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">if</span> <span class="n">g</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="n">b</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">)))</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">)),</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_NEAREST</span><span class="p">)</span> <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="n">g</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cv2</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">)),</span> <span class="n">interpolation</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">INTER_NEAREST</span><span class="p">)</span> <span class="k">if</span> <span class="n">g</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+            <span class="n">disp</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_GRAY2RGB</span><span class="p">)</span>
+            
+            <span class="c1"># Analitikai színezés alkalmazása (TP: Zöld, FP: Piros, FN: Kék)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug_act</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> <span class="ow">and</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">g</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="p">(</span><span class="n">m</span> <span class="o">&gt;</span> <span class="mi">127</span><span class="p">),</span> <span class="p">(</span><span class="n">g</span> <span class="o">&gt;</span> <span class="mi">127</span><span class="p">)</span>
+                <span class="n">ov</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span> <span class="n">ov</span><span class="p">[</span><span class="n">P</span> <span class="o">&amp;</span> <span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">76</span><span class="p">,</span> <span class="mi">175</span><span class="p">,</span> <span class="mi">80</span><span class="p">];</span> <span class="n">ov</span><span class="p">[</span><span class="n">P</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">244</span><span class="p">,</span> <span class="mi">67</span><span class="p">,</span> <span class="mi">54</span><span class="p">];</span> <span class="n">ov</span><span class="p">[</span><span class="o">~</span><span class="n">P</span> <span class="o">&amp;</span> <span class="n">T</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">33</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">243</span><span class="p">]</span>
+                <span class="n">cv2</span><span class="o">.</span><span class="n">addWeighted</span><span class="p">(</span><span class="n">ov</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">disp</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">overlay_act</span><span class="o">.</span><span class="n">isChecked</span><span class="p">()</span> <span class="ow">and</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ov</span> <span class="o">=</span> <span class="n">disp</span><span class="o">.</span><span class="n">copy</span><span class="p">();</span> <span class="n">ov</span><span class="p">[</span><span class="n">m</span> <span class="o">&gt;</span> <span class="mi">127</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+                <span class="n">cv2</span><span class="o">.</span><span class="n">addWeighted</span><span class="p">(</span><span class="n">ov</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="n">disp</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">disp</span><span class="p">)</span>
+
+            <span class="c1"># Konvertálás és renderelés QLabel-en</span>
+            <span class="n">pix</span> <span class="o">=</span> <span class="n">QPixmap</span><span class="o">.</span><span class="n">fromImage</span><span class="p">(</span><span class="n">QImage</span><span class="p">(</span><span class="n">disp</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">disp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">disp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">3</span><span class="o">*</span><span class="n">disp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">QImage</span><span class="o">.</span><span class="n">Format</span><span class="o">.</span><span class="n">Format_RGB888</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">image_display</span><span class="o">.</span><span class="n">setPixmap</span><span class="p">(</span><span class="n">pix</span><span class="o">.</span><span class="n">scaled</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_display</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AspectRatioMode</span><span class="o">.</span><span class="n">KeepAspectRatio</span><span class="p">,</span> <span class="n">Qt</span><span class="o">.</span><span class="n">TransformationMode</span><span class="o">.</span><span class="n">SmoothTransformation</span><span class="p">))</span>
+        <span class="k">except</span><span class="p">:</span> <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MRITumorApp.on_slider_change">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.on_slider_change">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_slider_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Szinkronizálja a fájllistát a csúszkával (Axiális nézet esetén).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_view_idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="o">.</span><span class="n">setCurrentRow</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_image_display</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="MRITumorApp.on_file_selected">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.on_file_selected">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_file_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Szinkronizálja a csúszkát a fájllistával (Axiális nézet esetén).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_view_idx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">r</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="MRITumorApp.refresh_display">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.refresh_display">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_display</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Aktualizálja a képernyőt külső beavatkozások (pl. nézetváltás) után.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_image_display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slice_slider</span><span class="o">.</span><span class="n">value</span><span class="p">())</span></div>
+
+        
+<div class="viewcode-block" id="MRITumorApp.resizeEvent">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.resizeEvent">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">resizeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Kezeli az ablak átméretezését, hogy a kép kitöltse a szabad teret.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_display</span><span class="p">();</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">resizeEvent</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+        
+<div class="viewcode-block" id="MRITumorApp.closeEvent">
+<a class="viewcode-back" href="../index.html#main.MRITumorApp.closeEvent">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">closeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Az alkalmazás bezárásakor törli a generált átmeneti fájlokat.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_temp_dir</span><span class="p">):</span> <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_temp_dir</span><span class="p">)</span>
+        <span class="n">e</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span></div>
+</div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">);</span> <span class="n">w</span> <span class="o">=</span> <span class="n">MRITumorApp</span><span class="p">();</span> <span class="n">w</span><span class="o">.</span><span class="n">show</span><span class="p">();</span> <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">exec</span><span class="p">())</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Hegyi Alex.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

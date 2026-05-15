@@ -1,0 +1,9 @@
+1. Hiperparaméter-optimalizáció (Grid Search):
+final_grid_search.py: Szisztematikus paraméter-keresést (Grid Search) hajt végre a végső hibrid modellen, automatikusan letesztelve a különböző beállításokat a legmagasabb Dice-pontszám elérése érdekében.
+
+ertekelese_a_gs.py: A Grid Search eredményeit elemzi egy Random Forest gépi tanulási algoritmussal, statisztikailag meghatározva, hogy az egyes paraméterek milyen mértékben befolyásolják a szegmentáció pontosságát.
+
+2. State-of-the-Art Összehasonlítás (nnU-Net)
+nnUNet_test.py: A referenciaként szolgáló, csúcstechnológiás nnU-Net mélytanulási modell inferenciáját (tesztelését) és futásidejének mérését hajtja végre a validációs adathalmazon.
+
+evaluate_nnunet.py: Az nnU-Net által generált térbeli (NIfTI formátumú) predikciókat veti össze a hagyományos 2D-s (PNG) orvosi referenciamaszkokkal, kiszámítva a dolgozatban szereplő benchmark Dice-eredményeket.

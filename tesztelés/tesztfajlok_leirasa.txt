@@ -1,0 +1,11 @@
+1. final_benchmark.py: Kiszámítja a 3D volumetrikus Dice-pontszámokat az összes modellre, és legenerálja a szakdolgozatban szereplő publikációs statisztikai ábrákat.
+
+2. run_experiments_thresholds.py: Matematikai és statisztikai stratégiákat (K-Means, GMM görbék metszéspontjai, percentilisek) versenyeztet meg, hogy kiderítse, melyik algoritmus adja a legpontosabb kiinduló magpontot a régió-növeléshez.
+
+3. test_histogram_ml.py: Az MRI metszetek pixel-intenzitásait vizualizálja hisztogramokon, és rájuk illeszti a K-Means klaszterközepeket, valamint a Gauss-keverékmodell (GMM) haranggörbéit a statisztikai eloszlások elemzéséhez.
+
+4. test_kmeans_colors.py: Egy interaktív, vizuális hibakereső eszköz, amely az MRI felvételt 5 K-Means klaszterre bontja, és rávetíti az orvosi referenciamaszkot (Ground Truth) a szegmentációs képességek ellenőrzésére.
+
+5. test_intensity.py: A Z-tengely menti "Intensity Drift" (fényerő-eltolódás) jelenséget méri.
+
+6. test_intensity2.py: A fényerő-eltolódás (drift) analízisének továbbfejlesztett változata, amely szétválasztja és külön elemzi a daganatos szövet és az egészséges agyállomány intenzitás-változását a metszetek mentén.

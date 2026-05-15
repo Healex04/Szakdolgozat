@@ -1,0 +1,13 @@
+# Python és IDE fájlok
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+
+*.pt
+*.pth
+Models/
+
+temp_*/
+Evaluation_Results/
+segment-anything-2/

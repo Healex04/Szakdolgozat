@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="hu" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tumor_logics.tumor_logic_3d_gradient &mdash; MRI Tumor Detektor 1.0 dokumentáció</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8f583c23"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/translations.js?v=ea187aaa"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Tárgymutató" href="../../genindex.html" />
+    <link rel="search" title="Keresés" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            MRI Tumor Detektor
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MRI Tumor Detektor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Modul forráskód</a></li>
+      <li class="breadcrumb-item active">tumor_logics.tumor_logic_3d_gradient</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>tumor_logics.tumor_logic_3d_gradient forráskódja</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">YOLO + 3D Gradiens Vizesárok (Sobel Edge) Detektor Modul.</span>
+
+<span class="sd">Ez a modul egy számítógépes látásbeli módszert (Sobel gradiens) vet be. </span>
+<span class="sd">Az algoritmus megkeresi a képen az éles kontrasztváltásokat (éleket), és ezeket </span>
+<span class="sd">matematikailag kivonja az eredeti képből. Ezzel egy mesterséges &quot;vizesárkot&quot; képez </span>
+<span class="sd">a daganat peremén, ami megakadályozza, hogy a 3D Region Growing kifolyjon az egészséges szövetekre.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ultralytics</span><span class="w"> </span><span class="kn">import</span> <span class="n">YOLO</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ndi</span>
+
+<div class="viewcode-block" id="TumorDetector3D_Gradient">
+<a class="viewcode-back" href="../../index.html#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TumorDetector3D_Gradient</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    3D daganatszegmentáló osztály mesterséges éldetektálásos (Sobel) korlátokkal.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        model_path (str): A YOLO neurális hálózat súlyait tartalmazó fájl (.pt) elérési útja.</span>
+<span class="sd">        model (ultralytics.YOLO): A betöltött YOLO modell példánya, vagy None hiba esetén.</span>
+<span class="sd">        last_best_z (int): Az azonosított daganatmag (seed) szelet-indexe a Z-tengelyen.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;Models/YOLO_3medfilt.pt&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_path</span> <span class="o">=</span> <span class="n">model_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_best_z</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> 
+        
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model_path</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[HIBA] Nem sikerült inicializálni a YOLO-t: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[HIBA] Nem található a modell: </span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TumorDetector3D_Gradient.run_batch_processing">
+<a class="viewcode-back" href="../../index.html#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.run_batch_processing">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_batch_processing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_folder</span><span class="p">,</span> <span class="n">output_folder</span><span class="p">,</span> <span class="n">progress_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lefuttatja a Gradiens Vizesárok alapú 3D szegmentációt.</span>
+
+<span class="sd">        A metódus kiszámolja az x és y irányú Sobel gradienseket, és kivonja </span>
+<span class="sd">        őket a simított MRI képekből. A keletkezett &quot;vizesárkokat&quot; kombinálja </span>
+<span class="sd">        egy &quot;YOLO ketreccel&quot; (biztonsági sáv a bounding box szélén), hogy </span>
+<span class="sd">        a gyors 3D tágulás tökéletesen a daganat határán álljon meg. A diagnosztikai </span>
+<span class="sd">        képek külön DEBUG mappába kerülnek mentésre.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_folder (str): A bemeneti MRI képeket tartalmazó forrásmappa.</span>
+<span class="sd">            output_folder (str): A generált PNG maszkok célmappája.</span>
+<span class="sd">            progress_callback (callable, optional): Függvény a GUI progress bar frissítéséhez (0-100).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list of str: A kimentett PNG maszkfájlok teljes elérési útjainak listája.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_folder</span><span class="p">):</span> <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">output_folder</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_folder</span><span class="p">)</span>
+        
+        <span class="n">debug_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="s2">&quot;DEBUG_LATOVICS&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">debug_folder</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">input_folder</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpeg&#39;</span><span class="p">))])</span>
+        <span class="n">Z_max</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">Z_max</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_best_z</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="n">volume</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="n">img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_folder</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">IMREAD_GRAYSCALE</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span> <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="p">[:,:,</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">volume</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+                
+        <span class="n">volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">volume</span><span class="p">)</span> 
+        <span class="n">_</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">volume</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># =================================================================</span>
+        <span class="c1"># 1. YOLO BOXOK (Legmagasabb magabiztosság keresése)</span>
+        <span class="c1"># =================================================================</span>
+        <span class="n">yolo_boxes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">max_conf</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">best_z</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">best_box</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Z_max</span><span class="p">):</span>
+            <span class="n">img_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_folder</span><span class="p">,</span> <span class="n">files</span><span class="p">[</span><span class="n">z</span><span class="p">])</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">img_path</span><span class="p">,</span> <span class="n">conf</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">results</span> <span class="ow">and</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">boxes</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">box</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">boxes</span><span class="p">:</span>
+                    <span class="n">coords</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">xyxy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                    <span class="n">conf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">conf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+                    
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+                        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
+                        
+                        <span class="n">box_area</span> <span class="o">=</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">box_area</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">W</span> <span class="o">*</span> <span class="n">H</span> <span class="o">*</span> <span class="mf">0.40</span><span class="p">):</span> <span class="k">continue</span>
+                            
+                        <span class="k">if</span> <span class="n">z</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">yolo_boxes</span><span class="p">:</span> <span class="n">yolo_boxes</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">yolo_boxes</span><span class="p">[</span><span class="n">z</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">))</span>
+                        
+                        <span class="k">if</span> <span class="n">conf</span> <span class="o">&gt;</span> <span class="n">max_conf</span><span class="p">:</span>
+                            <span class="n">max_conf</span> <span class="o">=</span> <span class="n">conf</span>
+                            <span class="n">best_z</span> <span class="o">=</span> <span class="n">z</span>
+                            <span class="n">best_box</span> <span class="o">=</span> <span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span>
+                            
+            <span class="k">if</span> <span class="n">progress_callback</span><span class="p">:</span> <span class="n">progress_callback</span><span class="p">(</span><span class="nb">int</span><span class="p">((</span><span class="n">z</span> <span class="o">/</span> <span class="n">Z_max</span><span class="p">)</span> <span class="o">*</span> <span class="mi">20</span><span class="p">))</span>
+
+        <span class="n">generated_masks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">best_z</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+                <span class="n">mask_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">f</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span>
+                <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">mask_name</span><span class="p">)</span>
+                <span class="n">cv</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+                <span class="n">generated_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">generated_masks</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_best_z</span> <span class="o">=</span> <span class="n">best_z</span> 
+
+        <span class="c1"># =================================================================</span>
+        <span class="c1"># 2. 3D ROI KIVÁGÁSA</span>
+        <span class="c1"># =================================================================</span>
+        <span class="n">all_x1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">boxes</span> <span class="ow">in</span> <span class="n">yolo_boxes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">])</span>
+        <span class="n">all_y1</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">boxes</span> <span class="ow">in</span> <span class="n">yolo_boxes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">])</span>
+        <span class="n">all_x2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">boxes</span> <span class="ow">in</span> <span class="n">yolo_boxes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">])</span>
+        <span class="n">all_y2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">b</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">boxes</span> <span class="ow">in</span> <span class="n">yolo_boxes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">boxes</span><span class="p">])</span>
+        <span class="n">min_z</span><span class="p">,</span> <span class="n">max_z</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">yolo_boxes</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">yolo_boxes</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        
+        <span class="n">pad_z</span><span class="p">,</span> <span class="n">pad_xy</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">15</span>
+        <span class="n">z1</span><span class="p">,</span> <span class="n">z2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">min_z</span> <span class="o">-</span> <span class="n">pad_z</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">Z_max</span><span class="p">,</span> <span class="n">max_z</span> <span class="o">+</span> <span class="n">pad_z</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">all_x1</span> <span class="o">-</span> <span class="n">pad_xy</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">all_x2</span> <span class="o">+</span> <span class="n">pad_xy</span><span class="p">)</span>
+        <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">all_y1</span> <span class="o">-</span> <span class="n">pad_xy</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">all_y2</span> <span class="o">+</span> <span class="n">pad_xy</span><span class="p">)</span>
+        
+        <span class="n">vol_roi</span> <span class="o">=</span> <span class="n">volume</span><span class="p">[</span><span class="n">z1</span><span class="p">:</span><span class="n">z2</span><span class="p">,</span> <span class="n">y1</span><span class="p">:</span><span class="n">y2</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span><span class="n">x2</span><span class="p">]</span>
+
+        <span class="c1"># =================================================================</span>
+        <span class="c1"># 3. A MAG INICIALIZÁLÁSA</span>
+        <span class="c1"># =================================================================</span>
+        <span class="n">current_mask_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">vol_roi</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">seed_z_roi</span> <span class="o">=</span> <span class="n">best_z</span> <span class="o">-</span> <span class="n">z1</span>
+        <span class="n">bx1</span><span class="p">,</span> <span class="n">by1</span><span class="p">,</span> <span class="n">bx2</span><span class="p">,</span> <span class="n">by2</span> <span class="o">=</span> <span class="n">best_box</span>
+        <span class="n">rx1</span><span class="p">,</span> <span class="n">ry1</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">bx1</span> <span class="o">-</span> <span class="n">x1</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">by1</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span>
+        <span class="n">rx2</span><span class="p">,</span> <span class="n">ry2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">vol_roi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">bx2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">vol_roi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">by2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span>
+        
+        <span class="n">seed_roi_2d</span> <span class="o">=</span> <span class="n">vol_roi</span><span class="p">[</span><span class="n">seed_z_roi</span><span class="p">,</span> <span class="n">ry1</span><span class="p">:</span><span class="n">ry2</span><span class="p">,</span> <span class="n">rx1</span><span class="p">:</span><span class="n">rx2</span><span class="p">]</span>
+        <span class="n">seed_thresh</span> <span class="o">=</span> <span class="mi">255</span>
+        <span class="k">if</span> <span class="n">seed_roi_2d</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">seed_thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">seed_roi_2d</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+            <span class="n">current_mask_3d</span><span class="p">[</span><span class="n">seed_z_roi</span><span class="p">,</span> <span class="n">ry1</span><span class="p">:</span><span class="n">ry2</span><span class="p">,</span> <span class="n">rx1</span><span class="p">:</span><span class="n">rx2</span><span class="p">]</span> <span class="o">=</span> <span class="n">seed_roi_2d</span> <span class="o">&gt;=</span> <span class="n">seed_thresh</span>
+
+        <span class="c1"># =================================================================</span>
+        <span class="c1"># 4. SIMÍTÁS ÉS GRADIENS VIZESÁROK</span>
+        <span class="c1"># =================================================================</span>
+        <span class="n">enhanced_roi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">vol_roi</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="n">grad_mag_debug</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">vol_roi</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mf">1.2</span> 
+
+        <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">vol_roi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">smoothed_img</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">medianBlur</span><span class="p">(</span><span class="n">vol_roi</span><span class="p">[</span><span class="n">z</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="n">img_float</span> <span class="o">=</span> <span class="n">smoothed_img</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            
+            <span class="n">grad_x</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Sobel</span><span class="p">(</span><span class="n">img_float</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">CV_32F</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ksize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">grad_y</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Sobel</span><span class="p">(</span><span class="n">img_float</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">CV_32F</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ksize</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">grad_mag</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">magnitude</span><span class="p">(</span><span class="n">grad_x</span><span class="p">,</span> <span class="n">grad_y</span><span class="p">)</span>
+            
+            <span class="n">grad_mag_debug</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">grad_mag</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+            
+            <span class="n">moat_img</span> <span class="o">=</span> <span class="n">img_float</span> <span class="o">-</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">grad_mag</span><span class="p">)</span>
+            <span class="n">enhanced_roi</span><span class="p">[</span><span class="n">z</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">moat_img</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+        <span class="c1"># =================================================================</span>
+        <span class="c1"># 5. KÜSZÖB ÉS YOLO KETREC BEÁLLÍTÁSA</span>
+        <span class="c1"># =================================================================</span>
+        <span class="n">struct</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">generate_binary_structure</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">limit_thresh</span> <span class="o">=</span> <span class="n">seed_thresh</span> <span class="o">*</span> <span class="mf">0.60</span>
+        <span class="n">limit_mask</span> <span class="o">=</span> <span class="n">enhanced_roi</span> <span class="o">&gt;=</span> <span class="n">limit_thresh</span>
+        
+        <span class="n">pad_wall</span> <span class="o">=</span> <span class="mi">8</span> 
+        <span class="n">limit_mask</span><span class="p">[:,</span> <span class="p">:</span><span class="n">pad_wall</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="kc">False</span>  
+        <span class="n">limit_mask</span><span class="p">[:,</span> <span class="o">-</span><span class="n">pad_wall</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="kc">False</span> 
+        <span class="n">limit_mask</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="n">pad_wall</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>  
+        <span class="n">limit_mask</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="n">pad_wall</span><span class="p">:]</span> <span class="o">=</span> <span class="kc">False</span> 
+        
+        <span class="n">cv</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">debug_folder</span><span class="p">,</span> <span class="s2">&quot;1_Eredeti_Kivagas.png&quot;</span><span class="p">),</span> <span class="n">vol_roi</span><span class="p">[</span><span class="n">seed_z_roi</span><span class="p">])</span>
+        <span class="n">cv</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">debug_folder</span><span class="p">,</span> <span class="s2">&quot;2_Tiszta_Gradiens.png&quot;</span><span class="p">),</span> <span class="n">grad_mag_debug</span><span class="p">[</span><span class="n">seed_z_roi</span><span class="p">])</span>
+        <span class="n">cv</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">debug_folder</span><span class="p">,</span> <span class="s2">&quot;3_Vizesarkos_Kep.png&quot;</span><span class="p">),</span> <span class="n">enhanced_roi</span><span class="p">[</span><span class="n">seed_z_roi</span><span class="p">])</span>
+        <span class="n">cv</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">debug_folder</span><span class="p">,</span> <span class="s2">&quot;4_Engedelyezett_Terulet_Mask.png&quot;</span><span class="p">),</span> <span class="p">(</span><span class="n">limit_mask</span><span class="p">[</span><span class="n">seed_z_roi</span><span class="p">]</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+
+        <span class="c1"># =================================================================</span>
+        <span class="c1"># 6. VILLÁMGYORS 3D NÖVELÉS A KETRECEN BELÜL</span>
+        <span class="c1"># =================================================================</span>
+        <span class="n">temp_mask</span> <span class="o">=</span> <span class="n">current_mask_3d</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">80</span><span class="p">):</span> 
+            <span class="n">prev</span> <span class="o">=</span> <span class="n">temp_mask</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">temp_mask</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">binary_dilation</span><span class="p">(</span><span class="n">temp_mask</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">struct</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">limit_mask</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">temp_mask</span><span class="p">,</span> <span class="n">prev</span><span class="p">):</span> <span class="k">break</span>
+                
+        <span class="n">current_mask_3d</span> <span class="o">=</span> <span class="n">temp_mask</span>
+        <span class="k">if</span> <span class="n">progress_callback</span><span class="p">:</span> <span class="n">progress_callback</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+
+        <span class="c1"># =================================================================</span>
+        <span class="c1"># 7. MORFOLÓGIAI TISZTÍTÁS</span>
+        <span class="c1"># =================================================================</span>
+        <span class="n">morph_struct</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">generate_binary_structure</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="n">current_mask_3d</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">binary_closing</span><span class="p">(</span><span class="n">current_mask_3d</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">morph_struct</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">current_mask_3d</span> <span class="o">=</span> <span class="n">ndi</span><span class="o">.</span><span class="n">binary_opening</span><span class="p">(</span><span class="n">current_mask_3d</span><span class="p">,</span> <span class="n">structure</span><span class="o">=</span><span class="n">morph_struct</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># =================================================================</span>
+        <span class="c1"># 8. AZ EREDMÉNY VISSZASZELETELÉSE ÉS MENTÉSE</span>
+        <span class="c1"># =================================================================</span>
+        <span class="n">final_volume_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">volume</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="n">final_volume_mask</span><span class="p">[</span><span class="n">z1</span><span class="p">:</span><span class="n">z2</span><span class="p">,</span> <span class="n">y1</span><span class="p">:</span><span class="n">y2</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span><span class="n">x2</span><span class="p">]</span> <span class="o">=</span> <span class="n">current_mask_3d</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span> <span class="o">*</span> <span class="mi">255</span>
+
+        <span class="k">for</span> <span class="n">z</span><span class="p">,</span> <span class="n">fname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">files</span><span class="p">):</span>
+            <span class="n">mask_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fname</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span>
+            <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_folder</span><span class="p">,</span> <span class="n">mask_name</span><span class="p">)</span>
+            <span class="n">cv</span><span class="o">.</span><span class="n">imwrite</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="n">final_volume_mask</span><span class="p">[</span><span class="n">z</span><span class="p">])</span>
+            <span class="n">generated_masks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">save_path</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">progress_callback</span><span class="p">:</span> <span class="n">progress_callback</span><span class="p">(</span><span class="mi">70</span> <span class="o">+</span> <span class="nb">int</span><span class="p">((</span><span class="n">z</span> <span class="o">/</span> <span class="n">Z_max</span><span class="p">)</span> <span class="o">*</span> <span class="mi">30</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">generated_masks</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Hegyi Alex.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

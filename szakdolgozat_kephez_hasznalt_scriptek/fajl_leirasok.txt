@@ -1,0 +1,11 @@
+generate1picfrom4.py: OpenCV segítségével több független MRI metszetet fűz össze egyetlen, rácsos (2x4-es) elrendezésű ábrává.
+
+gmm_visualization.py: A Gauss-keverékmodell (GMM) működését szemléltető szkript, amely a pixel-intenzitások hisztogramjára illeszti a matematikai haranggörbéket (PDF).
+
+gradient_visualization.py: A Sobel-operátor hatását demonstráló vizualizáció, amely egy mátrixban mutatja be a Gauss-simítás, az X és Y irányú deriváltak, valamint a végső gradiens magnitúdó (éltérkép) képzését.
+
+modalitas_kep.py: A NIfTI formátumú 3D orvosi kötetekből (FLAIR, T1, T1ce, T2) olvas ki azonos tengely menti metszeteket, vizuálisan bemutatva a BraTS adathalmaz multimodális jellegét.
+
+plainYolo.py: Egy letisztult YOLO predikciós szkript, amely a határoló dobozt (Bounding Box) és annak geometriai középpontját rajzolja rá az MRI felvételre a lokalizációs fázis szemléltetéséhez.
+
+nnunet_vs_mymodel.py: A dolgozat végén lévő benchmark szkript, amely automatikusan versenyezteti a hibrid algoritmust a State-of-the-Art nnU-Net modellel (CPU és GPU környezetben), mérve a térfogati Dice-koefficienst és a másodperc-alapú inferencia időt, majd ezekből logaritmikus oszlopdiagramot generál.

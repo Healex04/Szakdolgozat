@@ -1,0 +1,1118 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="hu" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MRI Tumor Detektor Dokumentáció &mdash; MRI Tumor Detektor 1.0 dokumentáció</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8f583c23"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=ea187aaa"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Tárgymutató" href="genindex.html" />
+    <link rel="search" title="Keresés" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            MRI Tumor Detektor
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">MRI Tumor Detektor Dokumentáció</a></li>
+<li><a class="reference internal" href="#rendszerarchitektura-attekintes">Rendszerarchitektúra Áttekintés</a></li>
+<li><a class="reference internal" href="#a-felhasznaloi-felulet-gui">A Felhasználói Felület (GUI)</a><ul>
+<li><a class="reference internal" href="#mri-tumor-detektor-fo-alkalmazas-main">MRI Tumor Detektor - Fő Alkalmazás (Main)</a><ul>
+<li><a class="reference internal" href="#szoftverarchitektura">Szoftverarchitektúra</a></li>
+<li><a class="reference internal" href="#d-megjelenites-mpr">3D Megjelenítés (MPR)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#main.MRITumorApp"><code class="docutils literal notranslate"><span class="pre">MRITumorApp</span></code></a><ul>
+<li><a class="reference internal" href="#main.MRITumorApp.image_paths"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.image_paths</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.volume_3d"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.volume_3d</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.mask_3d"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.mask_3d</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.gt_3d"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.gt_3d</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.current_folder_path"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.current_folder_path</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.current_label_folder"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.current_label_folder</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.base_temp_dir"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.base_temp_dir</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.eval_results_dir"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.eval_results_dir</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.loaded_models"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.loaded_models</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.current_view_idx"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.current_view_idx</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.change_view"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.change_view()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.closeEvent"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.closeEvent()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.init_menu_bar"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.init_menu_bar()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.init_ui_layout"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.init_ui_layout()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.load_gt_into_memory"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.load_gt_into_memory()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.load_masks_into_memory"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.load_masks_into_memory()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.on_file_selected"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.on_file_selected()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.on_slider_change"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.on_slider_change()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.open_folder"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.open_folder()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.open_label_folder"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.open_label_folder()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.refresh_display"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.refresh_display()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.resizeEvent"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.resizeEvent()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.run_detection"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.run_detection()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.run_evaluation"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.run_evaluation()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.set_dark_theme"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.set_dark_theme()</span></code></a></li>
+<li><a class="reference internal" href="#main.MRITumorApp.update_image_display"><code class="docutils literal notranslate"><span class="pre">MRITumorApp.update_image_display()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#analitikai-es-statisztikai-motor">Analitikai és Statisztikai Motor</a><ul>
+<li><a class="reference internal" href="#evaluation_logic.Evaluator"><code class="docutils literal notranslate"><span class="pre">Evaluator</span></code></a><ul>
+<li><a class="reference internal" href="#evaluation_logic.Evaluator.calculate_metrics"><code class="docutils literal notranslate"><span class="pre">Evaluator.calculate_metrics()</span></code></a></li>
+<li><a class="reference internal" href="#evaluation_logic.Evaluator.run_evaluation"><code class="docutils literal notranslate"><span class="pre">Evaluator.run_evaluation()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#plotting_logic.plot_confusion_matrix"><code class="docutils literal notranslate"><span class="pre">plot_confusion_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#plotting_logic.plot_dice_histogram"><code class="docutils literal notranslate"><span class="pre">plot_dice_histogram()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tumor-szegmentalo-ai-modellek">Tumor Szegmentáló AI Modellek</a><ul>
+<li><a class="reference internal" href="#hibrid-gmm-es-gradiens-model-zaszloshajo">Hibrid GMM és Gradiens Model (Zászlóshajó)</a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient_gauss</span></code></a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.model_path"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient_gauss.model_path</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.model"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient_gauss.model</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.last_best_z"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient_gauss.last_best_z</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.run_batch_processing"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient_gauss.run_batch_processing()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-tumor_logics.tumor_logic_3d_gradient">További 3D és Gradiens alapú modellek</a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient</span></code></a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.model_path"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient.model_path</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.model"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient.model</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.last_best_z"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient.last_best_z</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.run_batch_processing"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_Gradient.run_batch_processing()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_BBoxEdge</span></code></a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.model_path"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_BBoxEdge.model_path</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.model"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_BBoxEdge.model</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.last_best_z"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_BBoxEdge.last_best_z</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.run_batch_processing"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D_BBoxEdge.run_batch_processing()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3D.TumorDetector3D"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D</span></code></a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3D.TumorDetector3D.model_path"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D.model_path</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3D.TumorDetector3D.model"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D.model</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_3D.TumorDetector3D.run_batch_processing"><code class="docutils literal notranslate"><span class="pre">TumorDetector3D.run_batch_processing()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-tumor_logics.tumor_logic_grabcut">Klasszikus és AI alapú 2D/Video modellek</a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut"><code class="docutils literal notranslate"><span class="pre">TumorDetectorGrabCut</span></code></a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.model_path"><code class="docutils literal notranslate"><span class="pre">TumorDetectorGrabCut.model_path</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.use_region_growing"><code class="docutils literal notranslate"><span class="pre">TumorDetectorGrabCut.use_region_growing</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.model"><code class="docutils literal notranslate"><span class="pre">TumorDetectorGrabCut.model</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.apply_grabcut"><code class="docutils literal notranslate"><span class="pre">TumorDetectorGrabCut.apply_grabcut()</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.detect_on_single_image"><code class="docutils literal notranslate"><span class="pre">TumorDetectorGrabCut.detect_on_single_image()</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.morphological_region_growing"><code class="docutils literal notranslate"><span class="pre">TumorDetectorGrabCut.morphological_region_growing()</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.run_batch_processing"><code class="docutils literal notranslate"><span class="pre">TumorDetectorGrabCut.run_batch_processing()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_sam.TumorDetectorSAM"><code class="docutils literal notranslate"><span class="pre">TumorDetectorSAM</span></code></a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_sam.TumorDetectorSAM.get_yolo_prompts"><code class="docutils literal notranslate"><span class="pre">TumorDetectorSAM.get_yolo_prompts()</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic_sam.TumorDetectorSAM.run_batch_processing"><code class="docutils literal notranslate"><span class="pre">TumorDetectorSAM.run_batch_processing()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic.TumorDetector"><code class="docutils literal notranslate"><span class="pre">TumorDetector</span></code></a><ul>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic.TumorDetector.detect_on_single_image"><code class="docutils literal notranslate"><span class="pre">TumorDetector.detect_on_single_image()</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic.TumorDetector.morphological_region_growing"><code class="docutils literal notranslate"><span class="pre">TumorDetector.morphological_region_growing()</span></code></a></li>
+<li><a class="reference internal" href="#tumor_logics.tumor_logic.TumorDetector.run_batch_processing"><code class="docutils literal notranslate"><span class="pre">TumorDetector.run_batch_processing()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#targymutato-es-kereses">Tárgymutató és Keresés</a></li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">MRI Tumor Detektor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">MRI Tumor Detektor Dokumentáció</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="mri-tumor-detektor-dokumentacio">
+<h1>MRI Tumor Detektor Dokumentáció<a class="headerlink" href="#mri-tumor-detektor-dokumentacio" title="Link to this heading"></a></h1>
+<p>Üdvözöljük az <strong>MRI Tumor Detektor</strong> projekt hivatalos fejlesztői dokumentációjában!
+Ez a szoftver egy komplex keretrendszert biztosít agyi daganatok 3D MRI felvételeken történő
+automatikus szegmentálásához és orvosi metrikák alapú kiértékeléséhez.</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+<section id="rendszerarchitektura-attekintes">
+<h1>Rendszerarchitektúra Áttekintés<a class="headerlink" href="#rendszerarchitektura-attekintes" title="Link to this heading"></a></h1>
+<p>Az alkalmazás moduláris felépítésű. Az alábbi folyamatábra azt szemlélteti,
+hogyan áramlik az adat (MRI képek) a grafikus felülettől a Mesterséges Intelligencia
+modelleken át egészen a statisztikai kiértékelésig:</p>
+<div class="graphviz"><img src="_images/graphviz-383dc13e3d82806c55b782c671b750673de6ae0c.png" alt="digraph RendszerArchitektura {
+   // LR (balról jobbra) helyett TB (fentről lefelé) használata a kompaktabb nézetért
+   rankdir=TB;
+   nodesep=0.8; // Csomópontok közötti vízszintes távolság
+   ranksep=0.6; // Szintek közötti függőleges távolság
+
+   node [fontname=&quot;Helvetica&quot;, fontsize=11, shape=box, style=&quot;rounded,filled&quot;, fillcolor=&quot;#f9f9f9&quot;, color=&quot;#333333&quot;];
+   edge [fontname=&quot;Helvetica&quot;, fontsize=9, color=&quot;#666666&quot;];
+
+   // Csomópontok definiálása
+   Input [label=&quot;MRI 3D Kötet\n(Képek &amp; Mappák)&quot;, shape=folder, fillcolor=&quot;#fff3e0&quot;];
+   GUI [label=&quot;MRITumorApp\n(Felhasználói Felület)&quot;, fillcolor=&quot;#e1f5fe&quot;];
+   Registry [label=&quot;Model Registry\n(Dinamikus Betöltő)&quot;, fillcolor=&quot;#f3e5f5&quot;];
+
+   subgraph cluster_ai {
+      label=&quot;Mesterséges Intelligencia Motor&quot;;
+      style=dashed;
+      color=&quot;#999999&quot;;
+      // Ezeket egy sorba rendezzük a dobozon belül
+      {rank=same; YOLO; GMM; RG}
+      YOLO [label=&quot;YOLO\n(Lokalizáció)&quot;];
+      GMM [label=&quot;GMM &amp; Sobel\n(Pixel Analízis)&quot;];
+      RG [label=&quot;3D Region Growing\n(Térfogat Növelés)&quot;];
+
+      YOLO -&gt; GMM [label=&quot; ROI Bounding Box&quot;];
+      GMM -&gt; RG [label=&quot; Dinamikus Küszöbök&quot;];
+   }
+
+   Evaluator [label=&quot;Evaluator Modul\n(3D Metrikák)&quot;, fillcolor=&quot;#e8f5e9&quot;];
+   Plotter [label=&quot;Plotting Logic\n(Grafikonok)&quot;, fillcolor=&quot;#fce4ec&quot;];
+   Output [label=&quot;Riportok &amp; Maszkok\n(.png, .txt)&quot;, shape=note, fillcolor=&quot;#fffde7&quot;];
+
+   // Szintek (Ranks) kényszerítése, hogy szép réteges legyen
+   {rank=same; Evaluator; Plotter}
+
+   // Fő folyamat nyilak
+   Input -&gt; GUI [label=&quot; Betöltés a memóriába&quot;];
+   GUI -&gt; Registry [label=&quot; Kiválasztott modell&quot;];
+   Registry -&gt; YOLO [label=&quot; Példányosítás&quot;];
+   RG -&gt; GUI [label=&quot; Generált 3D Maszk&quot;];
+
+   GUI -&gt; Evaluator [label=&quot; Predikció + Ground Truth&quot;];
+   Evaluator -&gt; Plotter [label=&quot; Statisztikai adatok&quot;];
+   Plotter -&gt; Output [label=&quot; Grafikon mentése&quot;];
+   Evaluator -&gt; Output [label=&quot; Riport mentése&quot;];
+}" class="graphviz" /></div>
+</section>
+<section id="a-felhasznaloi-felulet-gui">
+<h1>A Felhasználói Felület (GUI)<a class="headerlink" href="#a-felhasznaloi-felulet-gui" title="Link to this heading"></a></h1>
+<p>A központi vezérlőmodul, amely az aszinkron folyamatokat, a 3D megjelenítést
+és a felhasználói interakciókat kezeli.</p>
+<section id="mri-tumor-detektor-fo-alkalmazas-main">
+<span id="module-main"></span><h2>MRI Tumor Detektor - Fő Alkalmazás (Main)<a class="headerlink" href="#mri-tumor-detektor-fo-alkalmazas-main" title="Link to this heading"></a></h2>
+<p>Ez a modul a projekt központi grafikus felhasználói felülete (GUI),
+amely PyQt6 keretrendszerre épül.</p>
+<section id="szoftverarchitektura">
+<h3>Szoftverarchitektúra<a class="headerlink" href="#szoftverarchitektura" title="Link to this heading"></a></h3>
+<p>A rendszer szigorúan elválasztja a grafikus megjelenítést a matematikai logikától:
+- <strong>Modell Réteg:</strong> A mesterséges intelligencia modellek (YOLO, SAM, GMM) a <cite>tumor_logics</cite> mappában találhatók.
+- <strong>Katalógus:</strong> A <cite>model_registry</cite> modul dinamikusan tölti be ezeket a modelleket.
+- <strong>Nézet Réteg:</strong> Ez a modul (<cite>main.py</cite>) végzi a 3D térfogatok memóriakezelését és MPR (Multi-Planar Reconstruction) megjelenítését.</p>
+</section>
+<section id="d-megjelenites-mpr">
+<h3>3D Megjelenítés (MPR)<a class="headerlink" href="#d-megjelenites-mpr" title="Link to this heading"></a></h3>
+<p>A szoftver képes az Axiális (Z), Koronális (Y) és Szagittális (X) metszetek valós idejű
+képzésére a betöltött 3D Numpy tömbök (Volume) átrendezésével (transpose, flip, resize).</p>
+</section>
+</section>
+<dl class="py class">
+<dt class="sig sig-object py" id="main.MRITumorApp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">main.</span></span><span class="sig-name descname"><span class="pre">MRITumorApp</span></span><a class="reference internal" href="_modules/main.html#MRITumorApp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">QMainWindow</span></code></p>
+<p>A fő ablakot és a globális állapottérképet (State) kezelő osztály.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.image_paths">
+<span class="sig-name descname"><span class="pre">image_paths</span></span><a class="headerlink" href="#main.MRITumorApp.image_paths" title="Link to this definition"></a></dt>
+<dd><p>A betöltött MRI szeletek fájlelérési útjai.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.volume_3d">
+<span class="sig-name descname"><span class="pre">volume_3d</span></span><a class="headerlink" href="#main.MRITumorApp.volume_3d" title="Link to this definition"></a></dt>
+<dd><p>Az eredeti MRI felvételeket tartalmazó 3D (Z, Y, X) szürkeárnyalatos tömb.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.mask_3d">
+<span class="sig-name descname"><span class="pre">mask_3d</span></span><a class="headerlink" href="#main.MRITumorApp.mask_3d" title="Link to this definition"></a></dt>
+<dd><p>A modell által prediktált bináris 3D maszk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.gt_3d">
+<span class="sig-name descname"><span class="pre">gt_3d</span></span><a class="headerlink" href="#main.MRITumorApp.gt_3d" title="Link to this definition"></a></dt>
+<dd><p>Az orvosi Ground Truth 3D maszk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.current_folder_path">
+<span class="sig-name descname"><span class="pre">current_folder_path</span></span><a class="headerlink" href="#main.MRITumorApp.current_folder_path" title="Link to this definition"></a></dt>
+<dd><p>Az aktuális MRI forrásmappa.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.current_label_folder">
+<span class="sig-name descname"><span class="pre">current_label_folder</span></span><a class="headerlink" href="#main.MRITumorApp.current_label_folder" title="Link to this definition"></a></dt>
+<dd><p>Az aktuális Ground Truth mappa.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.base_temp_dir">
+<span class="sig-name descname"><span class="pre">base_temp_dir</span></span><a class="headerlink" href="#main.MRITumorApp.base_temp_dir" title="Link to this definition"></a></dt>
+<dd><p>Az átmeneti predikciók mentési helye.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.eval_results_dir">
+<span class="sig-name descname"><span class="pre">eval_results_dir</span></span><a class="headerlink" href="#main.MRITumorApp.eval_results_dir" title="Link to this definition"></a></dt>
+<dd><p>A generált analitikai riportok mentési helye.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.loaded_models">
+<span class="sig-name descname"><span class="pre">loaded_models</span></span><a class="headerlink" href="#main.MRITumorApp.loaded_models" title="Link to this definition"></a></dt>
+<dd><p>A memóriába már betöltött AI modellek (példányok) gyorsítótára.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="main.MRITumorApp.current_view_idx">
+<span class="sig-name descname"><span class="pre">current_view_idx</span></span><a class="headerlink" href="#main.MRITumorApp.current_view_idx" title="Link to this definition"></a></dt>
+<dd><p>Az aktuális 3D nézet azonosítója (0: Axiális, 1: Koronális, 2: Szagittális).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.change_view">
+<span class="sig-name descname"><span class="pre">change_view</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.change_view"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.change_view" title="Link to this definition"></a></dt>
+<dd><p>Nézetváltás a 3D térben (Axiális, Koronális, Szagittális).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.closeEvent">
+<span class="sig-name descname"><span class="pre">closeEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.closeEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.closeEvent" title="Link to this definition"></a></dt>
+<dd><p>Az alkalmazás bezárásakor törli a generált átmeneti fájlokat.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.init_menu_bar">
+<span class="sig-name descname"><span class="pre">init_menu_bar</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.init_menu_bar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.init_menu_bar" title="Link to this definition"></a></dt>
+<dd><p>A felső gördülő menürendszer felépítése és az események (Action) bekötése.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.init_ui_layout">
+<span class="sig-name descname"><span class="pre">init_ui_layout</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.init_ui_layout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.init_ui_layout" title="Link to this definition"></a></dt>
+<dd><p>A hárompaneles (Bal: Vezérlés, Közép: Nézegető, Jobb: Analitika) főablak elrendezésének felépítése.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.load_gt_into_memory">
+<span class="sig-name descname"><span class="pre">load_gt_into_memory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.load_gt_into_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.load_gt_into_memory" title="Link to this definition"></a></dt>
+<dd><p>A Ground Truth (referencia) maszkok betöltése a memóriába analitikai célokra.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.load_masks_into_memory">
+<span class="sig-name descname"><span class="pre">load_masks_into_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.load_masks_into_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.load_masks_into_memory" title="Link to this definition"></a></dt>
+<dd><p>A temp mappából betölti a generált predikciós maszkokat.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.on_file_selected">
+<span class="sig-name descname"><span class="pre">on_file_selected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.on_file_selected"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.on_file_selected" title="Link to this definition"></a></dt>
+<dd><p>Szinkronizálja a csúszkát a fájllistával (Axiális nézet esetén).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.on_slider_change">
+<span class="sig-name descname"><span class="pre">on_slider_change</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.on_slider_change"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.on_slider_change" title="Link to this definition"></a></dt>
+<dd><p>Szinkronizálja a fájllistát a csúszkával (Axiális nézet esetén).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.open_folder">
+<span class="sig-name descname"><span class="pre">open_folder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.open_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.open_folder" title="Link to this definition"></a></dt>
+<dd><p>Dialógusablakon keresztül betölti a páciens MRI képeit egy 3D NumPy tömbbe.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.open_label_folder">
+<span class="sig-name descname"><span class="pre">open_label_folder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.open_label_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.open_label_folder" title="Link to this definition"></a></dt>
+<dd><p>Dialógusablakon keresztül betölti a manuálisan annotált Ground Truth maszkokat.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.refresh_display">
+<span class="sig-name descname"><span class="pre">refresh_display</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.refresh_display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.refresh_display" title="Link to this definition"></a></dt>
+<dd><p>Aktualizálja a képernyőt külső beavatkozások (pl. nézetváltás) után.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.resizeEvent">
+<span class="sig-name descname"><span class="pre">resizeEvent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.resizeEvent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.resizeEvent" title="Link to this definition"></a></dt>
+<dd><p>Kezeli az ablak átméretezését, hogy a kép kitöltse a szabad teret.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.run_detection">
+<span class="sig-name descname"><span class="pre">run_detection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.run_detection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.run_detection" title="Link to this definition"></a></dt>
+<dd><p>Példányosítja a kiválasztott AI modellt (Registry Pattern), majd elindítja a
+futtatást (szegmentálást) a teljes 3D köteten egy aszinkron progress bar kíséretében.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.run_evaluation">
+<span class="sig-name descname"><span class="pre">run_evaluation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.run_evaluation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.run_evaluation" title="Link to this definition"></a></dt>
+<dd><p>Összeköti az <cite>Evaluator</cite> modult a GUI-val, és megjeleníti a 3D metrikákat a konzolon.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.set_dark_theme">
+<span class="sig-name descname"><span class="pre">set_dark_theme</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.set_dark_theme"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.set_dark_theme" title="Link to this definition"></a></dt>
+<dd><p>Modern, sötét tónusú stílus (CSS/QSS) beállítása.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="main.MRITumorApp.update_image_display">
+<span class="sig-name descname"><span class="pre">update_image_display</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/main.html#MRITumorApp.update_image_display"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#main.MRITumorApp.update_image_display" title="Link to this definition"></a></dt>
+<dd><p>Az aktuálisan kiválasztott 3D metszet (MPR) kiszámítása és renderelése a Qt felületen.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-model_registry">Modell Katalógus (Registry Pattern).</p>
+<p>Ez a modul felelős a mesterséges intelligencia és képfeldolgozó modellek
+dinamikus nyilvántartásáért. A főprogram (GUI) ebből a szótárból olvassa ki
+az elérhető módszereket, így új modell hozzáadásához elegendő csak ezt a fájlt bővíteni.</p>
+</section>
+<section id="analitikai-es-statisztikai-motor">
+<h1>Analitikai és Statisztikai Motor<a class="headerlink" href="#analitikai-es-statisztikai-motor" title="Link to this heading"></a></h1>
+<p>Ez a szekció tartalmazza a volumetrikus (3D) kiértékelésért és a statisztikai
+vizualizációkért felelős logikát.</p>
+<p id="module-evaluation_logic">Volumetrikus Kiértékelő és Metrika Modul.</p>
+<p>Ez a modul végzi a prediktált 3D tumor maszkok és az orvosi Ground Truth (címkék)
+pixel-szintű és térfogati (volumetric) összehasonlítását. Kiszámítja az orvosi képfeldolgozásban
+standardnak számító metrikákat (Dice, Sensitivity, Specificity).</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="evaluation_logic.Evaluator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">evaluation_logic.</span></span><span class="sig-name descname"><span class="pre">Evaluator</span></span><a class="reference internal" href="_modules/evaluation_logic.html#Evaluator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evaluation_logic.Evaluator" title="Link to this definition"></a></dt>
+<dd><p>A szegmentációs eredményeket statisztikailag kiértékelő osztály.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="evaluation_logic.Evaluator.calculate_metrics">
+<span class="sig-name descname"><span class="pre">calculate_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_mask</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/evaluation_logic.html#Evaluator.calculate_metrics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evaluation_logic.Evaluator.calculate_metrics" title="Link to this definition"></a></dt>
+<dd><p>Kiszámítja az alapvető statisztikai metrikákat két 2D bináris maszk között.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pred_mask</strong> (<em>numpy.ndarray</em>) – Az algoritmus által generált bináris maszk.</p></li>
+<li><p><strong>true_mask</strong> (<em>numpy.ndarray</em>) – Az orvosi (Ground Truth) bináris maszk.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>(tp, tn, fp, fn, dice, sensitivity, specificity, balanced_acc)</dt><dd><ul class="simple">
+<li><p>tp, tn, fp, fn (int): A téveszmátrix elemei pixel darabszámban.</p></li>
+<li><p>dice, sensitivity, specificity, balanced_acc (float): 0.0 és 1.0 közötti teljesítménymutatók.</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="evaluation_logic.Evaluator.run_evaluation">
+<span class="sig-name descname"><span class="pre">run_evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generated_masks_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ground_truth_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_base_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patient_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/evaluation_logic.html#Evaluator.run_evaluation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#evaluation_logic.Evaluator.run_evaluation" title="Link to this definition"></a></dt>
+<dd><p>Végrehajtja egy teljes beteg (MRI kötet) 3D volumetrikus kiértékelését.</p>
+<p>A függvény betölti a prediktált és a valós maszkokat, pixelenként összeveti őket,
+kiszámolja a globális 3D metrikákat, majd generál egy szöveges analitikai riportot
+és a vizuális ábrákat.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>generated_masks_folder</strong> (<em>str</em>) – A modell által generált maszkok mappája.</p></li>
+<li><p><strong>ground_truth_folder</strong> (<em>str</em>) – A manuálisan annotált orvosi maszkok mappája.</p></li>
+<li><p><strong>output_base_folder</strong> (<em>str</em>) – A főkönyvtár, ahova az eredmény mappa kerül.</p></li>
+<li><p><strong>patient_name</strong> (<em>str</em>) – Az aktuális MRI kötet azonosítója/neve.</p></li>
+<li><p><strong>method_name</strong> (<em>str</em>) – A kiértékelt algoritmus kódja (pl. «3D_GRADIENT_GAUSS»).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>(success, save_dir, vol_dice)</dt><dd><ul class="simple">
+<li><p>success (bool): Igaz, ha sikeres volt az értékelés, Hamis ha nem talált fájlokat.</p></li>
+<li><p>save_dir (str): A generált riportokat tartalmazó mappa elérési útja.</p></li>
+<li><p>vol_dice (float): A végső, 3D globális Dice Score (0.0 - 1.0).</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-plotting_logic">Vizualizációs és Plotting Modul.</p>
+<p>Ez a modul felelős a kiértékelés során keletkező statisztikai adatok
+(Confusion Matrix, Dice Histogram) grafikus megjelenítéséért és mentéséért.
+A generált ábrák a dokumentációban és az analitikai riportokban kerülnek felhasználásra.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="plotting_logic.plot_confusion_matrix">
+<span class="sig-prename descclassname"><span class="pre">plotting_logic.</span></span><span class="sig-name descname"><span class="pre">plot_confusion_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">title</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Confusion</span> <span class="pre">Matrix'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting_logic.html#plot_confusion_matrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plotting_logic.plot_confusion_matrix" title="Link to this definition"></a></dt>
+<dd><p>Legenerálja és elmenti a 2x2-es tévesztésmátrix (Confusion Matrix) hőtérképét.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tp</strong> (<em>int</em>) – True Positive (Helyes találat) pixelek száma globálisan.</p></li>
+<li><p><strong>tn</strong> (<em>int</em>) – True Negative (Helyes háttér) pixelek száma globálisan.</p></li>
+<li><p><strong>fp</strong> (<em>int</em>) – False Positive (Téves riasztás) pixelek száma globálisan.</p></li>
+<li><p><strong>fn</strong> (<em>int</em>) – False Negative (Hiányzó találat) pixelek száma globálisan.</p></li>
+<li><p><strong>save_path</strong> (<em>str</em>) – A kimeneti PNG fájl teljes elérési útja.</p></li>
+<li><p><strong>title</strong> (<em>str</em><em>, </em><em>optional</em>) – A grafikon címe. Alapértelmezett: „Confusion Matrix”.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="plotting_logic.plot_dice_histogram">
+<span class="sig-prename descclassname"><span class="pre">plotting_logic.</span></span><span class="sig-name descname"><span class="pre">plot_dice_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dice_scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/plotting_logic.html#plot_dice_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plotting_logic.plot_dice_histogram" title="Link to this definition"></a></dt>
+<dd><p>Legenerál és elment egy hisztogramot az egyedi szeleteken elért Dice pontszámokból.</p>
+<p>A grafikon megmutatja a teljesítmény eloszlását az MRI köteten belül</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dice_scores</strong> (<em>list</em><em> of </em><em>float</em>) – A 2D szeletenként kiszámolt Dice értékek listája.</p></li>
+<li><p><strong>save_path</strong> (<em>str</em>) – A kimeneti PNG fájl elérési útja.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="tumor-szegmentalo-ai-modellek">
+<h1>Tumor Szegmentáló AI Modellek<a class="headerlink" href="#tumor-szegmentalo-ai-modellek" title="Link to this heading"></a></h1>
+<p>Itt találhatók a kutatás során kidolgozott különböző mélységű algoritmusok,
+a legegyszerűbb 2D megoldástól a legfejlettebb, GMM-alapú 3D gradiens vizesárokig.</p>
+<section id="hibrid-gmm-es-gradiens-model-zaszloshajo">
+<h2>Hibrid GMM és Gradiens Model (Zászlóshajó)<a class="headerlink" href="#hibrid-gmm-es-gradiens-model-zaszloshajo" title="Link to this heading"></a></h2>
+<p>Ez a modell képviseli a projekt technológiai csúcsát, kombinálva a statisztikai
+pixel-klasszifikációt az organikus távolsági büntetéssel.</p>
+<div class="graphviz"><img src="_images/inheritance-688c63a81d2d0d88896dca0e6b1b0efd46dafcde.png" alt="Inheritance diagram of tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss" usemap="#inheritance6345bf031d" class="inheritance graphviz" /></div>
+<map id="inheritance6345bf031d" name="inheritance6345bf031d">
+<area shape="rect" id="node1" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss" target="_top" title="3D MRI daganatdetektáló és szegmentáló osztály." alt="" coords="5,5,229,32"/>
+</map><p id="module-tumor_logics.tumor_logic_3d_gradient_gauss">YOLO + GMM + 3D Gradiens Vizesárok (EDT) Csúcsmodell.</p>
+<p>Ez a modul a kutatás legjobb szegmentációs algoritmusa.
+Az eljárás ötvözi a deep learning alapú lokalizációt (YOLO), a statisztikai
+pixel-analízist (Gauss-keverékmodell - GMM) és a morfológiai 3D térfogat-növelést.
+A modell egyedi vonásai:
+- YOLO által vezérelt, szigorúan lokalizált GMM küszöb-számítás minden szeleten.
+- Euklideszi távolság-transzformáción (EDT) alapuló organikus térbeli büntetés.
+- Automatikus statisztikai (hisztogram) diagnosztikai ábrák generálása.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tumor_logics.tumor_logic_3d_gradient_gauss.</span></span><span class="sig-name descname"><span class="pre">TumorDetector3D_Gradient_gauss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Models/YOLO_3medfilt.pt'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_3d_gradient_gauss.html#TumorDetector3D_Gradient_gauss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>3D MRI daganatdetektáló és szegmentáló osztály.</p>
+<p>A rendszer a YOLO dobozokon belül Gauss-keverékmodellel (GMM) izolálja a
+daganat intenzitás-csúcsát, többpontos magvetést (multi-seeding) alkalmaz,
+majd egy Sobel-gradiensekkel és EDT-vel határolt 3D teret tölt ki.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.model_path">
+<span class="sig-name descname"><span class="pre">model_path</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.model_path" title="Link to this definition"></a></dt>
+<dd><p>A YOLO neurális hálózat súlyait tartalmazó fájl (.pt) elérési útja.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.model" title="Link to this definition"></a></dt>
+<dd><p>A betöltött YOLO modell példánya, vagy None hiba esetén.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ultralytics.YOLO</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.last_best_z">
+<span class="sig-name descname"><span class="pre">last_best_z</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.last_best_z" title="Link to this definition"></a></dt>
+<dd><p>Az utolsó futtatás során azonosított legdominánsabb tumorszelet Z-indexe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.run_batch_processing">
+<span class="sig-name descname"><span class="pre">run_batch_processing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yolo_conf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.47</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dist_penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.88</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_thresh_mult</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.85</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_boundary_mult</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.33</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">closing_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opening_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation_iters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_3d_gradient_gauss.html#TumorDetector3D_Gradient_gauss.run_batch_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient_gauss.TumorDetector3D_Gradient_gauss.run_batch_processing" title="Link to this definition"></a></dt>
+<dd><p>Lefuttatja a teljes, intelligens 3D tumor-szegmentációs pipeline-t.</p>
+<p>A folyamat lépései:
+1. YOLO lokalizáció.
+2. Szeletenkénti GMM analízis a YOLO dobozokon belül (Küszöb-meghatározás).
+3. Diagnosztikai GMM hisztogram generálása a reprezentatív középső szeleten.
+4. Többpontos magvetés (Multi-seeding) az összes validált szeleten.
+5. Sobel-gradiens alapú élkiemelés (Vizesárok).
+6. EDT alapú organikus távolsági büntetés kiszámítása a magoktól.
+7. 3D Region Growing a dinamikus küszöb-térkép alapján.
+8. 3D Morfológiai tisztítás (Opening, Closing, Lyuktömés).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_folder</strong> (<em>str</em>) – A bemeneti MRI képeket tartalmazó forrásmappa.</p></li>
+<li><p><strong>output_folder</strong> (<em>str</em>) – A generált 2D bináris PNG maszkok célmappája.</p></li>
+<li><p><strong>progress_callback</strong> (<em>callable</em><em>, </em><em>optional</em>) – Függvény a GUI progress bar frissítéséhez (0-100).</p></li>
+<li><p><strong>yolo_conf</strong> (<em>float</em><em>, </em><em>optional</em>) – A YOLO detekció konfidencia küszöbe. Alapértelmezett: 0.4.</p></li>
+<li><p><strong>alpha</strong> (<em>float</em><em>, </em><em>optional</em>) – A Sobel gradiens (vizesárok) levonásának intenzitása. Alapértelmezett: 0.47.</p></li>
+<li><p><strong>dist_penalty</strong> (<em>float</em><em>, </em><em>optional</em>) – Az EDT távolság alapú küszöb-szigorítás szorzója. Alapértelmezett: 0.88.</p></li>
+<li><p><strong>base_thresh_mult</strong> (<em>float</em><em>, </em><em>optional</em>) – A GMM csúcsértékének magvetési engedékenysége. Alapértelmezett: 0.85.</p></li>
+<li><p><strong>strict_boundary_mult</strong> (<em>float</em><em>, </em><em>optional</em>) – A végső metszetképzés (vágás) szigorúsága. Alapértelmezett: 0.33.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p>A kimentett PNG maszkfájlok (és a GMM grafikon) teljes elérési útjainak listája.</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-tumor_logics.tumor_logic_3d_gradient">
+<span id="tovabbi-3d-es-gradiens-alapu-modellek"></span><h2>További 3D és Gradiens alapú modellek<a class="headerlink" href="#module-tumor_logics.tumor_logic_3d_gradient" title="Link to this heading"></a></h2>
+<p>YOLO + 3D Gradiens Vizesárok (Sobel Edge) Detektor Modul.</p>
+<p>Ez a modul egy számítógépes látásbeli módszert (Sobel gradiens) vet be.
+Az algoritmus megkeresi a képen az éles kontrasztváltásokat (éleket), és ezeket
+matematikailag kivonja az eredeti képből. Ezzel egy mesterséges „vizesárkot” képez
+a daganat peremén, ami megakadályozza, hogy a 3D Region Growing kifolyjon az egészséges szövetekre.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tumor_logics.tumor_logic_3d_gradient.</span></span><span class="sig-name descname"><span class="pre">TumorDetector3D_Gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Models/YOLO_3medfilt.pt'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_3d_gradient.html#TumorDetector3D_Gradient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient" title="Link to this definition"></a></dt>
+<dd><p>3D daganatszegmentáló osztály mesterséges éldetektálásos (Sobel) korlátokkal.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.model_path">
+<span class="sig-name descname"><span class="pre">model_path</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.model_path" title="Link to this definition"></a></dt>
+<dd><p>A YOLO neurális hálózat súlyait tartalmazó fájl (.pt) elérési útja.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.model" title="Link to this definition"></a></dt>
+<dd><p>A betöltött YOLO modell példánya, vagy None hiba esetén.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ultralytics.YOLO</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.last_best_z">
+<span class="sig-name descname"><span class="pre">last_best_z</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.last_best_z" title="Link to this definition"></a></dt>
+<dd><p>Az azonosított daganatmag (seed) szelet-indexe a Z-tengelyen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.run_batch_processing">
+<span class="sig-name descname"><span class="pre">run_batch_processing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_3d_gradient.html#TumorDetector3D_Gradient.run_batch_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_3d_gradient.TumorDetector3D_Gradient.run_batch_processing" title="Link to this definition"></a></dt>
+<dd><p>Lefuttatja a Gradiens Vizesárok alapú 3D szegmentációt.</p>
+<p>A metódus kiszámolja az x és y irányú Sobel gradienseket, és kivonja
+őket a simított MRI képekből. A keletkezett „vizesárkokat” kombinálja
+egy „YOLO ketreccel” (biztonsági sáv a bounding box szélén), hogy
+a gyors 3D tágulás tökéletesen a daganat határán álljon meg. A diagnosztikai
+képek külön DEBUG mappába kerülnek mentésre.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_folder</strong> (<em>str</em>) – A bemeneti MRI képeket tartalmazó forrásmappa.</p></li>
+<li><p><strong>output_folder</strong> (<em>str</em>) – A generált PNG maszkok célmappája.</p></li>
+<li><p><strong>progress_callback</strong> (<em>callable</em><em>, </em><em>optional</em>) – Függvény a GUI progress bar frissítéséhez (0-100).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p>A kimentett PNG maszkfájlok teljes elérési útjainak listája.</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-tumor_logics.tumor_logic_3d_bbox">YOLO + 3D Bounding Box Perem (Fényerő Fal) Detektor Modul.</p>
+<p>Ez a modul egy innovatív, „inverz” megközelítést alkalmaz. Ahelyett, hogy
+kizárólag a daganat fényességét vizsgálná, a YOLO dobozon KÍVÜL eső,
+egészséges agyszövet intenzitásából számol egy „kőfal” küszöbértéket.
+A 3D régió-növelés addig terjed a dobozon belül, amíg bele nem ütközik ebbe
+a kiszámított egészséges agyszövet-határba.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tumor_logics.tumor_logic_3d_bbox.</span></span><span class="sig-name descname"><span class="pre">TumorDetector3D_BBoxEdge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Models/YOLO_3medfilt.pt'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_3d_bbox.html#TumorDetector3D_BBoxEdge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge" title="Link to this definition"></a></dt>
+<dd><p>3D szegmentáló osztály, amely a környező egészséges szövetekből
+kalkulál dinamikus terjeszkedési határt.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.model_path">
+<span class="sig-name descname"><span class="pre">model_path</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.model_path" title="Link to this definition"></a></dt>
+<dd><p>A YOLO neurális hálózat súlyait tartalmazó fájl (.pt) elérési útja.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.model" title="Link to this definition"></a></dt>
+<dd><p>A betöltött YOLO modell példánya, vagy None hiba esetén.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ultralytics.YOLO</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.last_best_z">
+<span class="sig-name descname"><span class="pre">last_best_z</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.last_best_z" title="Link to this definition"></a></dt>
+<dd><p>Az azonosított daganatmag (seed) szelet-indexe a Z-tengelyen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.run_batch_processing">
+<span class="sig-name descname"><span class="pre">run_batch_processing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_3d_bbox.html#TumorDetector3D_BBoxEdge.run_batch_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_3d_bbox.TumorDetector3D_BBoxEdge.run_batch_processing" title="Link to this definition"></a></dt>
+<dd><p>Lefuttatja a Fényerő Fal alapú 3D szegmentációt a megadott MRI mappán.</p>
+<p>A folyamat során az algoritmus kivágja a YOLO ROI-t, majd megvizsgálja a
+dobozon kívül eső sötétebb (egészséges) agyterületek legvilágosabb pontjait.
+Ez lesz az a „fal”, aminél a növekvő tumor maszk nem mehet tovább.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_folder</strong> (<em>str</em>) – A bemeneti MRI képeket tartalmazó forrásmappa.</p></li>
+<li><p><strong>output_folder</strong> (<em>str</em>) – A generált PNG maszkok célmappája.</p></li>
+<li><p><strong>progress_callback</strong> (<em>callable</em><em>, </em><em>optional</em>) – Függvény a GUI progress bar frissítéséhez (0-100).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p>A kimentett PNG maszkfájlok teljes elérési útjainak listája.</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-tumor_logics.tumor_logic_3D">YOLO + Alap 3D Region Growing (Adaptív Térfogatfigyeléssel).</p>
+<p>Ez a modul egy tisztán 3D-s térfogati növelést alkalmaz. Különlegessége az
+„Adaptív Térfogat-figyelő” (Volume Watcher) algoritmus, amely megakadályozza,
+hogy a maszk kiterjedjen az egészséges agyszövetre a küszöbértékek fokozatos
+csökkentése és a növekedési ütem (growth rate) monitorozása révén.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3D.TumorDetector3D">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tumor_logics.tumor_logic_3D.</span></span><span class="sig-name descname"><span class="pre">TumorDetector3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Models/YOLO_3medfilt.pt'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_3D.html#TumorDetector3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_3D.TumorDetector3D" title="Link to this definition"></a></dt>
+<dd><p>3D térfogati daganatszegmentáló osztály adaptív küszöbérték-védelemmel.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3D.TumorDetector3D.model_path">
+<span class="sig-name descname"><span class="pre">model_path</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3D.TumorDetector3D.model_path" title="Link to this definition"></a></dt>
+<dd><p>A YOLO neurális hálózat súlyait tartalmazó fájl (.pt) elérési útja.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3D.TumorDetector3D.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_3D.TumorDetector3D.model" title="Link to this definition"></a></dt>
+<dd><p>A betöltött YOLO modell példánya, vagy None, ha a betöltés sikertelen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ultralytics.YOLO</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_3D.TumorDetector3D.run_batch_processing">
+<span class="sig-name descname"><span class="pre">run_batch_processing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_3D.html#TumorDetector3D.run_batch_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_3D.TumorDetector3D.run_batch_processing" title="Link to this definition"></a></dt>
+<dd><p>Lefuttatja a teljes 3D-s szegmentációt és az adaptív térfogat-ellenőrzést
+egy mappa összes MRI szeletén.</p>
+<p>A folyamat lépései: 1) 3D Volumen felépítése -&gt; 2) YOLO dobozok kinyerése -&gt;
+3) 3D ROI vágás -&gt; 4) Mag (seed) lerakása a legerősebb szeleten -&gt;
+5) Otsu küszöb kiszámítása -&gt; 6) Adaptív 3D terjeszkedés a robbanás megelőzésével.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_folder</strong> (<em>str</em>) – A bemeneti képeket tartalmazó forrásmappa.</p></li>
+<li><p><strong>output_folder</strong> (<em>str</em>) – A generált PNG maszkok célmappája.</p></li>
+<li><p><strong>progress_callback</strong> (<em>callable</em><em>, </em><em>optional</em>) – Függvény a GUI progress bar frissítéséhez (0-100).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p>A kimentett PNG maszkfájlok teljes elérési útjainak listája.</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-tumor_logics.tumor_logic_grabcut">
+<span id="klasszikus-es-ai-alapu-2d-video-modellek"></span><h2>Klasszikus és AI alapú 2D/Video modellek<a class="headerlink" href="#module-tumor_logics.tumor_logic_grabcut" title="Link to this heading"></a></h2>
+<p>YOLO + GrabCut (és Region Growing) Hibrid Detektor Modul.</p>
+<p>Ez a modul a YOLO bounding boxok által határolt területen belül a
+számítógépes látás egyik klasszikus szegmentáló algoritmusát, a GrabCutot alkalmazza.</p>
+<p>Két üzemmóddal rendelkezik:</p>
+<ol class="arabic simple">
+<li><p>Sima GrabCut (Bounding Box alapú inicializálás).</p></li>
+<li><p>Kombinált módszer: Először egy durva Region Growing (RG) maszkot készít, majd ezt a maszkot adja át a GrabCut-nak precíziós finomhangolásra.</p></li>
+</ol>
+<dl class="py class">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tumor_logics.tumor_logic_grabcut.</span></span><span class="sig-name descname"><span class="pre">TumorDetectorGrabCut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Models/YOLO_3medfilt.pt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_region_growing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_grabcut.html#TumorDetectorGrabCut"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut" title="Link to this definition"></a></dt>
+<dd><p>A YOLO és GrabCut alapú szegmentálást végző osztály.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.model_path">
+<span class="sig-name descname"><span class="pre">model_path</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.model_path" title="Link to this definition"></a></dt>
+<dd><p>A YOLO neurális hálózat súlyait tartalmazó fájl (.pt) elérési útja.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.use_region_growing">
+<span class="sig-name descname"><span class="pre">use_region_growing</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.use_region_growing" title="Link to this definition"></a></dt>
+<dd><p>Kapcsoló a hibrid (RG + GrabCut) és a sima GrabCut mód között.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.model" title="Link to this definition"></a></dt>
+<dd><p>A betöltött YOLO modell példánya, vagy None, ha a betöltés sikertelen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ultralytics.YOLO</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.apply_grabcut">
+<span class="sig-name descname"><span class="pre">apply_grabcut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_roi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_rect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_grabcut.html#TumorDetectorGrabCut.apply_grabcut"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.apply_grabcut" title="Link to this definition"></a></dt>
+<dd><p>GrabCut szegmentációt hajt végre a megadott képrészleten.</p>
+<p>A függvény vagy egy Bounding Box-ot (use_rect=True), vagy egy előzetesen
+kiszámolt bináris maszkot (mask_input) használ a háttér és az előtér inicializálásához.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img_roi</strong> (<em>numpy.ndarray</em>) – A szegmentálandó szürkeárnyalatos képrészlet.</p></li>
+<li><p><strong>use_rect</strong> (<em>bool</em><em>, </em><em>optional</em>) – Használjon-e téglalap-alapú inicializálást. Alapértelmezett: False.</p></li>
+<li><p><strong>mask_input</strong> (<em>numpy.ndarray</em><em>, </em><em>optional</em>) – Egy előzetes bináris maszk a pontosabb
+inicializáláshoz (GC_INIT_WITH_MASK).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p>A GrabCut által finomított végső bináris maszk.</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.detect_on_single_image">
+<span class="sig-name descname"><span class="pre">detect_on_single_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_grabcut.html#TumorDetectorGrabCut.detect_on_single_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.detect_on_single_image" title="Link to this definition"></a></dt>
+<dd><p>Egyetlen képen futtatja le a YOLO detektálást és a GrabCut szegmentálást.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img_path</strong> (<em>str</em>) – A vizsgálandó képfájl elérési útja.</p>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p>(has_tumor, mask) bináris találati flag és az elkészült maszk.</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.morphological_region_growing">
+<span class="sig-name descname"><span class="pre">morphological_region_growing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_roi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed_percentile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">85</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_percentile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_grabcut.html#TumorDetectorGrabCut.morphological_region_growing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.morphological_region_growing" title="Link to this definition"></a></dt>
+<dd><p>Durva 2D-s morfológiai régió-növelést végez, amely a GrabCut inicializálásához (maszk) kell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img_roi</strong> (<em>numpy.ndarray</em>) – A vizsgálandó 2D-s szürkeárnyalatos képrészlet (YOLO doboz).</p></li>
+<li><p><strong>seed_percentile</strong> (<em>int</em><em>, </em><em>optional</em>) – A kiinduló magok fényességi percentilise. Alapértelmezett: 85.</p></li>
+<li><p><strong>limit_percentile</strong> (<em>int</em><em>, </em><em>optional</em>) – A tágulási határ fényességi percentilise. Alapértelmezett: 40.</p></li>
+<li><p><strong>max_iter</strong> (<em>int</em><em>, </em><em>optional</em>) – A tágítási iterációk maximális száma. Alapértelmezett: 50.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p>Egy durva, 2D bináris maszk a GrabCut előtér/háttér meghatározásához.</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.run_batch_processing">
+<span class="sig-name descname"><span class="pre">run_batch_processing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_grabcut.html#TumorDetectorGrabCut.run_batch_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_grabcut.TumorDetectorGrabCut.run_batch_processing" title="Link to this definition"></a></dt>
+<dd><p>A teljes folyamatot futtatja egy mappa összes MRI szeletén.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Paraméterek<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_folder</strong> (<em>str</em>) – A bemeneti képeket tartalmazó forrásmappa.</p></li>
+<li><p><strong>output_folder</strong> (<em>str</em>) – A generált PNG maszkok célmappája.</p></li>
+<li><p><strong>progress_callback</strong> (<em>callable</em><em>, </em><em>optional</em>) – Függvény a GUI progress bar frissítéséhez (0-100).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Visszatérési érték<span class="colon">:</span></dt>
+<dd class="field-even"><p>A generált maszkfájlok teljes elérési útjainak listája.</p>
+</dd>
+<dt class="field-odd">Visszatérés típusa<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-tumor_logics.tumor_logic_sam">YOLO + SAM 2 (Segment Anything Model 2) Video Detektor Modul.</p>
+<p>Ez a modul a Meta SAM 2 videószegmentációs modelljét használja fel a tumorok
+3D-s követésére. A YOLO modell automatikusan generálja a
+kezdeti promptokat (pozitív pontokat) a daganat területén, amelyeket a SAM 2
+propagál a Z-tengely (szeletek) mentén, mint egy videó képkockáin.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_sam.TumorDetectorSAM">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tumor_logics.tumor_logic_sam.</span></span><span class="sig-name descname"><span class="pre">TumorDetectorSAM</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yolo_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Models/YOLO_3medfilt.pt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sam_checkpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segment-anything-2/sam2_hiera_large.pt'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sam_config_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'segment-anything-2/sam2/configs/sam2'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sam_config_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sam2_hiera_l.yaml'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_sam.html#TumorDetectorSAM"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_sam.TumorDetectorSAM" title="Link to this definition"></a></dt>
+<dd><p>SAM 2 videó szegmentáló és YOLO prompt generáló osztály.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_sam.TumorDetectorSAM.get_yolo_prompts">
+<span class="sig-name descname"><span class="pre">get_yolo_prompts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_paths</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_sam.html#TumorDetectorSAM.get_yolo_prompts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_sam.TumorDetectorSAM.get_yolo_prompts" title="Link to this definition"></a></dt>
+<dd><p>Geometriai prompt pontok generálása a YOLO bounding boxok alapján.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic_sam.TumorDetectorSAM.run_batch_processing">
+<span class="sig-name descname"><span class="pre">run_batch_processing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic_sam.html#TumorDetectorSAM.run_batch_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic_sam.TumorDetectorSAM.run_batch_processing" title="Link to this definition"></a></dt>
+<dd><p>SAM 2 batch feldolgozás futtatása a megadott mappán.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p id="module-tumor_logics.tumor_logic">Egyszerű YOLO + 2D Morfológiai Region Growing Detektor Modul.</p>
+<p>Ez a modul egy alapvető, 2D-s megközelítést alkalmaz a tumorok szegmentálására.
+A YOLO modell által meghatározott határoló dobozokon (Bounding Box) belül
+egy intenzitás-alapú (percentilis) morfológiai régió-növelést hajt végre.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic.TumorDetector">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tumor_logics.tumor_logic.</span></span><span class="sig-name descname"><span class="pre">TumorDetector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Models/YOLO_3medfilt.pt'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic.html#TumorDetector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic.TumorDetector" title="Link to this definition"></a></dt>
+<dd><p>2D alapú baseline tumor detektor és szegmentáló.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic.TumorDetector.detect_on_single_image">
+<span class="sig-name descname"><span class="pre">detect_on_single_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic.html#TumorDetector.detect_on_single_image"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic.TumorDetector.detect_on_single_image" title="Link to this definition"></a></dt>
+<dd><p>Egyetlen kép detektálása YOLO-val és 2D RG szegmentációval.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic.TumorDetector.morphological_region_growing">
+<span class="sig-name descname"><span class="pre">morphological_region_growing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_roi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed_percentile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">92.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit_percentile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic.html#TumorDetector.morphological_region_growing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic.TumorDetector.morphological_region_growing" title="Link to this definition"></a></dt>
+<dd><p>Egyszerű morfológiai intenzitás-alapú régió növelés.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tumor_logics.tumor_logic.TumorDetector.run_batch_processing">
+<span class="sig-name descname"><span class="pre">run_batch_processing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progress_callback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/tumor_logics/tumor_logic.html#TumorDetector.run_batch_processing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#tumor_logics.tumor_logic.TumorDetector.run_batch_processing" title="Link to this definition"></a></dt>
+<dd><p>Mappa feldolgozása a baseline 2D detektorral.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+<section id="targymutato-es-kereses">
+<h1>Tárgymutató és Keresés<a class="headerlink" href="#targymutato-es-kereses" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Tárgymutató</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Modulok</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Keresés</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Hegyi Alex.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
