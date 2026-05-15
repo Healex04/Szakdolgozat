@@ -44,7 +44,7 @@ A szoftver grafikus kezelőfelülete (GUI) az alábbi paranccsal indítható a f
 2. **Referencia maszkok:** Ha rendelkezel Ground Truth adatokkal, töltsd be őket az összehasonlító statisztikákhoz. Ezeknek pontosan követniük kell az eredeti képek elnevezését `_mask` utótaggal (pl. `000_mask.jpg`).
 3. **Modellválasztás:** A bal oldali panelen válassz a hibrid algoritmusok vagy a SAM 2 közül.
 4. **3D MPR Nézet:** A szoftver automatikusan előállítja a koronális és szagittális metszeteket, amik között a csúszkákkal navigálhatsz.
-5. **Eredmények:** A rendszer kiszámítja a daganat térfogatát és (referencia esetén) a Dice-koefficienst.
+5. **Eredmények:** A rendszer kiszámítja a daganat szegmentációját és (referencia esetén) a Dice-koefficienst.
 
 ---
 
